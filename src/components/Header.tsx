@@ -48,7 +48,7 @@ export function Header() {
 
         <nav className="flex flex-1 items-center justify-center">
           <Link
-            href="/"
+            href="/store"
             className="text-lg font-semibold text-zinc-300 transition hover:text-white sm:text-xl md:text-2xl"
           >
             Store
