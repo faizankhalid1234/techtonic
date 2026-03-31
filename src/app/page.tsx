@@ -3,7 +3,7 @@ import Image from "next/image";
 export default function Home() {
   return (
     <div className="flex flex-1 flex-col">
-      <section className="relative min-h-[100svh] w-full overflow-hidden bg-zinc-100">
+      <section className="relative min-h-[100svh] w-full overflow-hidden bg-black">
         <Image
           src="/sunlong-hero-hd.webp"
           alt="SUNLONG — original color screen, phones on display with brand showcase"
@@ -18,7 +18,7 @@ export default function Home() {
           aria-hidden
         />
         <div className="absolute bottom-0 left-0 z-10 max-w-lg p-5 pb-8 sm:max-w-xl sm:p-8 sm:pb-10 md:max-w-2xl md:p-10">
-          <div className="rounded-2xl border border-zinc-800/60 bg-zinc-950/75 p-5 shadow-2xl backdrop-blur-md sm:p-6">
+          <div className="rounded-2xl border border-amber-500/20 bg-zinc-950/75 p-5 shadow-2xl backdrop-blur-md sm:p-6">
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.35em] text-amber-400">
               SUNLONG
             </p>
