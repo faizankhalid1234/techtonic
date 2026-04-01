@@ -43,6 +43,22 @@ export default function Home() {
               smooth touch response. Designed for people who want both quality
               and style.
             </p>
+            <div className="ticker-wrap mt-5">
+              <div className="ticker-track">
+                {[
+                  "Free Delivery",
+                  "Original color screen - vivid panels, true blacks",
+                  "COD checkout - pay the rider on delivery",
+                  "Free Delivery",
+                  "Original color screen - vivid panels, true blacks",
+                  "COD checkout - pay the rider on delivery",
+                ].map((item, idx) => (
+                  <span key={`${item}-${idx}`} className="ticker-pill">
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 href="/store"

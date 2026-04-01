@@ -133,6 +133,54 @@ body {
   animation: featured-pan 4200ms ease-in-out infinite alternate;
 }
 
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.ticker-wrap {
+  position: relative;
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 9999px;
+  background: rgba(9, 9, 11, 0.55);
+  backdrop-filter: blur(6px);
+}
+
+.ticker-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.48rem 0.6rem;
+  animation: ticker-scroll 16s linear infinite;
+}
+
+.ticker-pill {
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  padding: 0.35rem 0.7rem;
+  background: rgba(24, 24, 27, 0.72);
+  color: #f4f4f5;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .ticker-pill {
+    font-size: 12px;
+    padding: 0.42rem 0.8rem;
+  }
+}
+
 /* Touch devices don't have reliable hover, so run effects automatically. */
 @media (hover: none) and (pointer: coarse) {
   .featured-image {
@@ -145,5 +193,9 @@ body {
 
   .hero-shine {
     animation: featured-shine 3000ms ease-out infinite;
+  }
+
+  .ticker-track {
+    animation-duration: 14s;
   }
 }
