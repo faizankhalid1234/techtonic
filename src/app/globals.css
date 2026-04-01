@@ -132,3 +132,18 @@ body {
 .hero-section:hover .hero-image {
   animation: featured-pan 4200ms ease-in-out infinite alternate;
 }
+
+/* Touch devices don't have reliable hover, so run effects automatically. */
+@media (hover: none) and (pointer: coarse) {
+  .featured-image {
+    animation: featured-pan 4600ms ease-in-out infinite alternate;
+  }
+
+  .featured-shine {
+    animation: featured-shine 2600ms ease-out infinite;
+  }
+
+  .hero-shine {
+    animation: featured-shine 3000ms ease-out infinite;
+  }
+}
