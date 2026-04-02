@@ -31,10 +31,41 @@ export default function Home() {
 
         <div className="relative z-10 mx-auto flex min-h-[72svh] w-full max-w-7xl flex-col px-4 pb-12 pt-4 md:min-h-[86svh] md:pb-16 md:pt-5">
           <div className="flex flex-1 flex-col justify-center pt-2 md:pt-4">
-            <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.32em] text-amber-400 drop-shadow-sm sm:text-base md:text-lg">
-              SUNLONG x Tech Tonic
-            </p>
+            <div className="max-w-3xl">
+            <div className="relative overflow-hidden rounded-3xl border border-white/15 bg-zinc-950/50 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.45)] ring-1 ring-amber-500/15 backdrop-blur-md sm:p-8 md:p-10">
+              <div
+                className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-amber-500/12 blur-3xl"
+                aria-hidden
+              />
+              <div
+                className="pointer-events-none absolute -bottom-10 -left-10 h-36 w-36 rounded-full bg-fuchsia-500/10 blur-3xl"
+                aria-hidden
+              />
+
+              <p className="relative text-[10px] font-semibold uppercase tracking-[0.45em] text-amber-400/90 sm:text-xs">
+                Official partnership
+              </p>
+
+              <h1 className="relative mt-4 flex flex-col gap-1 sm:mt-5">
+                <span className="bg-gradient-to-br from-amber-100 via-amber-400 to-amber-600 bg-clip-text text-4xl font-black uppercase leading-[0.95] tracking-[0.12em] text-transparent drop-shadow-[0_0_32px_rgba(251,191,36,0.4)] sm:text-5xl sm:tracking-[0.16em] md:text-6xl lg:text-7xl">
+                  SUNLONG
+                </span>
+                <span
+                  className="my-0.5 text-2xl font-extralight leading-none text-amber-500/75 sm:my-1 sm:text-3xl md:text-4xl"
+                  aria-hidden
+                >
+                  ×
+                </span>
+                <span className="text-3xl font-black uppercase leading-[0.95] tracking-[0.14em] text-zinc-50 drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)] sm:text-4xl sm:tracking-[0.18em] md:text-5xl lg:text-6xl xl:text-[3.75rem]">
+                  Tech Tonic
+                </span>
+              </h1>
+
+              <p className="relative mt-5 max-w-md text-sm leading-relaxed text-zinc-400 sm:mt-6 sm:text-base">
+                Original color screens, premium panels, and accessories — built
+                for clarity you can see every day.
+              </p>
+            </div>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 href="/store"
