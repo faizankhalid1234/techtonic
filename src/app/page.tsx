@@ -42,11 +42,7 @@ export default function Home() {
                 aria-hidden
               />
 
-              <p className="relative text-[10px] font-semibold uppercase tracking-[0.45em] text-amber-400/90 sm:text-xs">
-                Official partnership
-              </p>
-
-              <h1 className="relative mt-4 flex flex-col gap-1 sm:mt-5">
+              <h1 className="relative flex flex-col gap-1">
                 <span className="bg-gradient-to-br from-amber-100 via-amber-400 to-amber-600 bg-clip-text text-4xl font-black uppercase leading-[0.95] tracking-[0.12em] text-transparent drop-shadow-[0_0_32px_rgba(251,191,36,0.4)] sm:text-5xl sm:tracking-[0.16em] md:text-6xl lg:text-7xl">
                   SUNLONG
                 </span>
