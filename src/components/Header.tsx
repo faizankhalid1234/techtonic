@@ -38,28 +38,34 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 min-h-[5rem] border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur-md sm:min-h-[5.75rem]">
-      <div className="mx-auto flex h-full min-h-[inherit] max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:gap-6 sm:px-6 sm:py-5">
+      <div className="mx-auto flex h-full min-h-[inherit] max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:gap-6 sm:px-6 sm:py-4">
         <Link
           href="/"
-          className="shrink-0 text-2xl font-extrabold tracking-[0.22em] text-zinc-50 sm:text-3xl md:text-4xl lg:text-[2.75rem] lg:tracking-[0.26em]"
+          className="group flex min-w-0 items-center gap-3 sm:gap-4"
         >
-          TECH TONIC
+          <span
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-amber-400/35 bg-gradient-to-br from-amber-400/25 via-fuchsia-500/15 to-zinc-900 shadow-lg shadow-black/40 ring-1 ring-white/10 transition group-hover:border-amber-400/55 sm:h-14 sm:w-14 md:h-16 md:w-16"
+            aria-hidden
+          >
+            <svg
+              className="h-6 w-6 text-amber-300 sm:h-7 sm:w-7 md:h-8 md:w-8"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.35}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="7" y="3" width="10" height="18" rx="2.2" />
+              <path d="M10 6.5h4M10 17h4" />
+            </svg>
+          </span>
+          <span className="min-w-0 truncate text-xl font-extrabold uppercase tracking-[0.22em] text-zinc-50 sm:text-2xl md:text-3xl lg:text-[2rem] lg:tracking-[0.24em]">
+            TECH TONIC
+          </span>
         </Link>
 
-        <nav className="flex flex-1 items-center justify-center">
-          <Link
-            href="/store"
-            className="text-lg font-semibold text-zinc-300 transition hover:text-white sm:text-xl md:text-2xl"
-          >
-            Store
-          </Link>
-        </nav>
-
-        <div className="flex shrink-0 items-center gap-2 text-sm text-zinc-400 sm:gap-3 md:gap-4 md:text-base">
-          <span className="hidden lg:inline whitespace-nowrap">
-            United States (USD $)
-          </span>
-          <span className="hidden lg:inline">English</span>
+        <div className="flex min-w-0 shrink-0 items-center justify-end gap-2 text-sm text-zinc-400 sm:gap-3 md:gap-4 md:text-base">
           {user ? (
             <span className="hidden max-w-[140px] truncate text-zinc-300 xl:inline">
               {user.name}

@@ -29,37 +29,13 @@ export default function Home() {
           aria-hidden
         />
 
-        <div className="relative z-10 mx-auto flex min-h-[72svh] w-full max-w-7xl flex-col justify-center px-4 py-12 md:min-h-[86svh] md:py-16">
-          <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.38em] text-amber-400 drop-shadow-sm">
+        <div className="relative z-10 mx-auto flex min-h-[72svh] w-full max-w-7xl flex-col px-4 pb-12 pt-4 md:min-h-[86svh] md:pb-16 md:pt-5">
+          <div className="flex flex-1 flex-col justify-center pt-2 md:pt-4">
+            <div className="max-w-2xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.32em] text-amber-400 drop-shadow-sm sm:text-base md:text-lg">
               SUNLONG x Tech Tonic
             </p>
-            <h1 className="mt-3 text-3xl font-bold leading-tight text-white drop-shadow-md sm:text-5xl md:text-6xl">
-              Original Color
-              <span className="block text-amber-300">Screen Experience</span>
-            </h1>
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-zinc-200 drop-shadow sm:text-base">
-              Premium display panels for brighter colors, deeper contrast, and
-              smooth touch response. Designed for people who want both quality
-              and style.
-            </p>
-            <div className="ticker-wrap mt-5">
-              <div className="ticker-track">
-                {[
-                  "Free Delivery",
-                  "Original color screen - vivid panels, true blacks",
-                  "COD checkout - pay the rider on delivery",
-                  "Free Delivery",
-                  "Original color screen - vivid panels, true blacks",
-                  "COD checkout - pay the rider on delivery",
-                ].map((item, idx) => (
-                  <span key={`${item}-${idx}`} className="ticker-pill">
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 href="/store"
                 className="inline-flex w-full items-center justify-center rounded-xl bg-amber-400 px-5 py-2.5 text-sm font-semibold text-zinc-950 transition hover:bg-amber-300 sm:w-auto"
@@ -83,12 +59,13 @@ export default function Home() {
                   key={s.label}
                   className="rounded-xl border border-white/10 bg-zinc-950/55 p-2.5 backdrop-blur-md sm:p-3"
                 >
-                  <p className="text-base font-bold text-white sm:text-lg">{s.value}</p>
-                  <p className="text-[10px] uppercase tracking-wide text-zinc-400 sm:text-[11px]">
+                  <p className="text-lg font-bold text-white sm:text-xl">{s.value}</p>
+                  <p className="text-xs uppercase tracking-wide text-zinc-400 sm:text-sm">
                     {s.label}
                   </p>
                 </div>
               ))}
+            </div>
             </div>
           </div>
         </div>
