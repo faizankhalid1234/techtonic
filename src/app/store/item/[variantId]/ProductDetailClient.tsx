@@ -86,7 +86,7 @@ export function ProductDetailClient({ line, variant }: Props) {
               unoptimized
             />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-zinc-950/40 via-transparent to-transparent" />
-            <span className="absolute left-4 top-4 rounded-full border border-white/15 bg-black/50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-amber-200 backdrop-blur-md">
+            <span className="absolute left-4 top-4 rounded-full border border-white/15 bg-black/70 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-amber-200 md:bg-black/50 md:backdrop-blur-md">
               SUNLONG
             </span>
           </div>
@@ -165,14 +165,14 @@ export function ProductDetailClient({ line, variant }: Props) {
             <button
               type="button"
               onClick={() => addToCart()}
-              className="inline-flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl bg-amber-400 px-8 text-base font-semibold text-zinc-950 shadow-lg shadow-amber-500/20 transition hover:bg-amber-300 active:scale-[0.99] sm:min-w-[200px]"
+              className="touch-manipulation inline-flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl bg-amber-400 px-8 text-base font-semibold text-zinc-950 shadow-lg shadow-amber-500/20 transition hover:bg-amber-300 active:scale-[0.99] sm:min-w-[200px]"
             >
               {addedFlash ? "Added to cart ✓" : "Add to cart"}
             </button>
             <button
               type="button"
               onClick={() => buyNow()}
-              className="inline-flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl border-2 border-zinc-600 bg-transparent px-8 text-base font-semibold text-zinc-100 transition hover:border-amber-500/50 hover:bg-zinc-900/50 active:scale-[0.99] sm:min-w-[200px]"
+              className="touch-manipulation inline-flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl border-2 border-zinc-600 bg-transparent px-8 text-base font-semibold text-zinc-100 transition hover:border-amber-500/50 hover:bg-zinc-900/50 active:scale-[0.99] sm:min-w-[200px]"
             >
               Buy now
             </button>
@@ -190,7 +190,7 @@ export function ProductDetailClient({ line, variant }: Props) {
               <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
                 More options in this range
               </h3>
-              <div className="mt-4 flex gap-2 overflow-x-auto pb-2 [scrollbar-width:thin]">
+              <div className="mobile-scroll mt-4 flex gap-2 overflow-x-auto pb-2 [scrollbar-width:thin]">
                 {others.map((v) => (
                   <Link
                     key={v.id}

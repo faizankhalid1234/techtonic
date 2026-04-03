@@ -30,7 +30,7 @@ export default function RootLayout({
       lang="en"
       className={`${dmSans.variable} ${jetbrains.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-zinc-950 text-zinc-100">
+      <body className="min-h-full overflow-x-hidden flex flex-col bg-zinc-950 text-zinc-100 antialiased">
         <CartProvider>
           <SiteShell>{children}</SiteShell>
         </CartProvider>

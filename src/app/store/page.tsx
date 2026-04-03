@@ -88,7 +88,7 @@ function VariantListItem({
               </p>
             </div>
           </div>
-          <div className="shrink-0 rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-right backdrop-blur-sm sm:ml-auto">
+          <div className="shrink-0 rounded-2xl border border-white/[0.08] bg-white/[0.08] px-4 py-2 text-right sm:ml-auto sm:bg-white/[0.04] md:backdrop-blur-sm">
             <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
               PKR
             </p>
@@ -100,7 +100,7 @@ function VariantListItem({
         <button
           type="button"
           onClick={() => onAdd()}
-          className="inline-flex shrink-0 items-center justify-center gap-2 self-stretch rounded-full bg-amber-400 px-5 py-2.5 text-sm font-semibold text-zinc-900 shadow-lg shadow-amber-500/20 transition hover:bg-amber-300 hover:shadow-amber-400/30 active:scale-[0.97] sm:self-center"
+          className="touch-manipulation inline-flex shrink-0 items-center justify-center gap-2 self-stretch rounded-full bg-amber-400 px-5 py-2.5 text-sm font-semibold text-zinc-900 shadow-lg shadow-amber-500/20 transition hover:bg-amber-300 hover:shadow-amber-400/30 active:scale-[0.97] sm:self-center"
         >
           <PlusIcon className="h-4 w-4" />
           Add
@@ -128,20 +128,24 @@ function ProductCard({
           src={line.image}
           alt={line.title}
           fill
-          className="object-cover object-center transition duration-500 group-hover:scale-[1.03]"
+          className="object-cover object-center transition duration-500 md:group-hover:scale-[1.03]"
           sizes="(max-width: 768px) 100vw, 50vw"
           unoptimized
         />
         <div
-          className={`pointer-events-none absolute inset-0 bg-gradient-to-t ${CATEGORY_GLOW[line.category]} mix-blend-screen`}
+          className={`pointer-events-none absolute inset-0 bg-gradient-to-t ${CATEGORY_GLOW[line.category]} opacity-35 md:hidden`}
+          aria-hidden
+        />
+        <div
+          className={`pointer-events-none absolute inset-0 hidden bg-gradient-to-t ${CATEGORY_GLOW[line.category]} mix-blend-screen md:block`}
           aria-hidden
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
-        <span className="absolute left-3 top-3 rounded-full border border-white/10 bg-black/45 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-200 backdrop-blur-sm sm:left-4 sm:top-4 sm:text-xs">
+        <span className="absolute left-3 top-3 rounded-full border border-white/10 bg-black/65 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-200 sm:left-4 sm:top-4 sm:bg-black/45 sm:text-xs md:backdrop-blur-sm">
           {cat?.label ?? line.category}
         </span>
         <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-3 py-1.5 backdrop-blur-md">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/65 px-3 py-1.5 md:bg-black/40 md:backdrop-blur-md">
             <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
               From
             </span>
@@ -177,7 +181,7 @@ function ProductCard({
         </div>
 
         <div className="mt-4 overflow-hidden rounded-[1.35rem] border border-zinc-800/60 bg-zinc-950/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-          <ul className="max-h-[min(24rem,52svh)] divide-y divide-zinc-800/50 overflow-y-auto [scrollbar-color:rgba(82,82,91,0.5)_transparent] [scrollbar-width:thin]">
+          <ul className="mobile-scroll max-h-[min(18rem,48dvh)] divide-y divide-zinc-800/50 overflow-y-auto sm:max-h-[min(24rem,52svh)] [scrollbar-color:rgba(82,82,91,0.5)_transparent] [scrollbar-width:thin]">
             {line.variants.map((variant) => (
               <VariantListItem
                 key={variant.id}
@@ -330,7 +334,7 @@ export default function StorePage() {
       )}
 
       <div
-        className={`fixed inset-0 z-50 bg-black/55 backdrop-blur-[2px] transition-opacity duration-300 ${
+        className={`fixed inset-0 z-50 bg-black/60 transition-opacity duration-300 md:bg-black/55 md:backdrop-blur-[2px] ${
           drawerOpen
             ? "pointer-events-auto opacity-100"
             : "pointer-events-none opacity-0"
@@ -354,7 +358,7 @@ export default function StorePage() {
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="mobile-scroll min-h-0 flex-1 overflow-y-auto">
           {items.length === 0 ? (
             <p className="text-sm text-zinc-500">No items yet.</p>
           ) : (

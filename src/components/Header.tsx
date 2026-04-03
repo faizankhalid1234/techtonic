@@ -86,7 +86,7 @@ export function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur-md transition-[box-shadow,min-height,padding] duration-300 ${
+      className={`sticky top-0 z-50 border-b border-zinc-800/80 bg-zinc-950/95 backdrop-blur-none transition-[box-shadow,min-height,padding] duration-300 md:bg-zinc-950/90 md:backdrop-blur-md ${
         scrolled ? "shadow-[0_12px_40px_rgba(0,0,0,0.45)]" : ""
       }`}
     >
