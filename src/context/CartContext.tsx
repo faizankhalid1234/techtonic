@@ -14,6 +14,7 @@ export type CartItem = {
   name: string;
   price: number;
   qty: number;
+  image?: string;
 };
 
 type CartContextValue = {
@@ -43,6 +44,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
               productId: item.productId,
               name: item.name,
               price: item.price,
+              image: item.image,
               qty: q,
             },
           ];
@@ -78,6 +80,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           productId: item.productId,
           name: item.name,
           price: item.price,
+          image: item.image,
           qty: item.qty ?? 1,
         },
       ]);

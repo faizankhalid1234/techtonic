@@ -35,6 +35,7 @@ export function ProductDetailClient({ line, variant }: Props) {
       productId: variant.id,
       name: displayName,
       price: variant.price,
+      image: line.image,
       qty: 1,
     });
     setAddedFlash(true);
@@ -46,6 +47,7 @@ export function ProductDetailClient({ line, variant }: Props) {
       productId: variant.id,
       name: displayName,
       price: variant.price,
+      image: line.image,
       qty: 1,
     });
     router.push("/checkout");

@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useCart } from "@/context/CartContext";
+import { ProductThumb } from "@/components/ProductThumb";
 import { copy } from "@/lib/copy";
+import { imageForVariant } from "@/lib/storeCatalog";
 import {
   DELIVERY_FEE,
   digitsOnly,
@@ -392,9 +394,14 @@ export default function CheckoutPage() {
               {items.map((item) => (
                 <li
                   key={item.productId}
-                  className="flex justify-between gap-3 border-b border-zinc-800/60 pb-3 text-sm last:border-0 last:pb-0"
+                  className="flex items-center gap-3 border-b border-zinc-800/60 pb-3 text-sm last:border-0 last:pb-0"
                 >
-                  <span className="min-w-0 text-zinc-300">
+                  <ProductThumb
+                    src={item.image ?? imageForVariant(item.productId)}
+                    alt={item.name}
+                    size="sm"
+                  />
+                  <span className="min-w-0 flex-1 text-zinc-300">
                     {item.name}
                     <span className="text-zinc-500"> × {item.qty}</span>
                   </span>

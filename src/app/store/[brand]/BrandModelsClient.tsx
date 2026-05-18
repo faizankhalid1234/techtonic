@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { ProductThumb } from "@/components/ProductThumb";
 import { StoreCartBar } from "@/components/StoreCartBar";
 import { copy } from "@/lib/copy";
 import {
@@ -92,9 +93,14 @@ export function BrandModelsClient({
             <li key={entry.variant.id}>
               <Link
                 href={productItemHref(entry.variant.id)}
-                className="group flex items-center justify-between gap-4 rounded-2xl border border-zinc-800/60 bg-zinc-900/40 px-5 py-4 shadow-sm transition hover:border-amber-500/35 hover:bg-zinc-900/70 hover:shadow-lg hover:shadow-amber-500/5"
+                className="group flex items-center gap-4 rounded-2xl border border-zinc-800/60 bg-zinc-900/40 px-4 py-3.5 shadow-sm transition hover:border-amber-500/35 hover:bg-zinc-900/70 hover:shadow-lg hover:shadow-amber-500/5 sm:px-5 sm:py-4"
               >
-                <div className="min-w-0">
+                <ProductThumb
+                  src={entry.line.image}
+                  alt={entry.displayName}
+                  size="md"
+                />
+                <div className="min-w-0 flex-1">
                   <p className="text-lg font-semibold text-white group-hover:text-amber-100">
                     {entry.displayName}
                   </p>

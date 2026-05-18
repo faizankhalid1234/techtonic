@@ -335,6 +335,12 @@ export function maxPrice(line: StoreProductLine): number {
   return Math.max(...line.variants.map((x) => x.price));
 }
 
+const DEFAULT_PRODUCT_IMAGE = "/featured-picks-v3.png";
+
+export function imageForVariant(variantId: string): string {
+  return findVariantById(variantId)?.line.image ?? DEFAULT_PRODUCT_IMAGE;
+}
+
 export function findVariantById(
   id: string,
 ): { line: StoreProductLine; variant: StoreVariant } | null {

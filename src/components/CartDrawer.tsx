@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
+import { ProductThumb } from "@/components/ProductThumb";
 import { copy } from "@/lib/copy";
 import type { CartItem } from "@/context/CartContext";
+import { imageForVariant } from "@/lib/storeCatalog";
 
 function formatPkr(n: number) {
   return n.toLocaleString("en-PK");
@@ -185,15 +187,21 @@ function CartLineItem({
   removeItem: (productId: string) => void;
 }) {
   const lineTotal = item.price * item.qty;
+  const thumb = item.image ?? imageForVariant(item.productId);
   return (
     <li className="cart-item-enter group relative overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/50 p-4 ring-1 ring-white/[0.03] transition hover:border-amber-500/20 hover:bg-zinc-900/80">
       <div
         className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-amber-400/5 blur-2xl transition group-hover:bg-amber-400/10"
         aria-hidden
       />
-      <p className="pr-4 text-sm font-semibold leading-snug text-zinc-50">{item.name}</p>
-      <PriceRow item={item} lineTotal={lineTotal} />
-      <div className="mt-4 flex items-center justify-between gap-3">
+      <div className="flex gap-3">
+        <ProductThumb src={thumb} alt={item.name} size="sm" />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold leading-snug text-zinc-50">{item.name}</p>
+          <PriceRow item={item} lineTotal={lineTotal} />
+        </div>
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-3 pl-[3.75rem]">
         <div className="inline-flex items-center rounded-full border border-zinc-700/80 bg-zinc-950/80 p-0.5 shadow-inner shadow-black/30">
           <button
             type="button"
