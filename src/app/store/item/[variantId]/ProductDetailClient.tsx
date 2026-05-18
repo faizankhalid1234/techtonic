@@ -10,7 +10,6 @@ import {
   STORE_CATEGORIES,
   brandStoreHref,
   descriptionForProductDetail,
-  productItemHref,
   type StoreProductLine,
   type StoreVariant,
 } from "@/lib/storeCatalog";
@@ -26,13 +25,11 @@ function formatPkr(n: number) {
 
 export function ProductDetailClient({ line, variant }: Props) {
   const router = useRouter();
-  const { addItem } = useCart();
+  const { addItem, replaceWithItem } = useCart();
   const [addedFlash, setAddedFlash] = useState(false);
 
   const cat = STORE_CATEGORIES.find((c) => c.id === line.category);
   const displayName = `${cat?.label ?? "Display"} — ${variant.label}`;
-  const others = line.variants.filter((v) => v.id !== variant.id);
-
   function addToCart() {
     addItem({
       productId: variant.id,
@@ -45,7 +42,7 @@ export function ProductDetailClient({ line, variant }: Props) {
   }
 
   function buyNow() {
-    addItem({
+    replaceWithItem({
       productId: variant.id,
       name: displayName,
       price: variant.price,
@@ -187,30 +184,6 @@ export function ProductDetailClient({ line, variant }: Props) {
           >
             ← Back to {cat?.label ?? "brand"} models
           </Link>
-
-          {others.length > 0 ? (
-            <section className="mt-12 border-t border-zinc-800 pt-10">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
-                More options in this range
-              </h3>
-              <div className="mobile-scroll mt-4 flex gap-2 overflow-x-auto pb-2 [scrollbar-width:thin]">
-                {others.map((v) => (
-                  <Link
-                    key={v.id}
-                    href={productItemHref(v.id)}
-                    className="shrink-0 rounded-xl border border-zinc-700/80 bg-zinc-900/50 px-4 py-3 text-left transition hover:border-amber-500/40 hover:bg-zinc-800/50"
-                  >
-                    <p className="text-sm font-medium text-zinc-200">
-                      {v.label}
-                    </p>
-                    <p className="mt-1 text-xs tabular-nums text-amber-400">
-                      PKR {formatPkr(v.price)}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          ) : null}
         </div>
       </div>
     </div>

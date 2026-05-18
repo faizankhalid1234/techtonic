@@ -1,58 +1,95 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useCart } from "@/context/CartContext";
+import { copy } from "@/lib/copy";
+import {
+  DELIVERY_FEE,
+  digitsOnly,
+  formatCardNumber,
+  formatExpiry,
+  validateCardInputs,
+  type DeliveryType,
+  type PaymentMethod,
+} from "@/lib/checkout";
 
-const SHIPPING_STANDARD = 250;
+const INPUT =
+  "rounded-xl border border-zinc-700 bg-zinc-950/80 px-4 py-3 text-zinc-100 outline-none focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20";
 
-type PayMethod = "cod" | "card";
+function formatPkr(n: number) {
+  return n.toLocaleString("en-PK");
+}
+
+type SuccessInfo = {
+  orderId: string;
+  paymentMethod: PaymentMethod;
+  deliveryType: DeliveryType;
+};
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, clear } = useCart();
-  const [pay, setPay] = useState<PayMethod>("cod");
-  const [billingSame, setBillingSame] = useState(true);
+
+  const [deliveryType, setDeliveryType] = useState<DeliveryType>("delivery");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
+
   const [fullName, setFullName] = useState("");
   const [line1, setLine1] = useState("");
   const [city, setCity] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [phone, setPhone] = useState("");
-  const [cardName, setCardName] = useState("");
+
   const [cardNumber, setCardNumber] = useState("");
+  const [cardName, setCardName] = useState("");
   const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvc, setCardCvc] = useState("");
+  const [cardCvv, setCardCvv] = useState("");
+
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
-  const [doneId, setDoneId] = useState<string | null>(null);
+  const [success, setSuccess] = useState<SuccessInfo | null>(null);
 
   const subtotal = useMemo(
     () => items.reduce((s, i) => s + i.price * i.qty, 0),
     [items],
   );
-  const total = subtotal + SHIPPING_STANDARD;
-  const tax = 0;
+  const shipping =
+    deliveryType === "pickup" ? 0 : DELIVERY_FEE;
+  const total = subtotal + shipping;
   const itemCount = items.reduce((s, i) => s + i.qty, 0);
 
   useEffect(() => {
-    if (items.length === 0 && !doneId) {
-      router.replace("/");
+    if (items.length === 0 && !success) {
+      router.replace("/store");
     }
-  }, [items.length, router, doneId]);
+  }, [items.length, router, success]);
 
   async function placeOrder(e: React.FormEvent) {
     e.preventDefault();
     setMsg(null);
+
     if (items.length === 0) {
-      setMsg("Add items to your cart first.");
+      setMsg("Your cart is empty.");
       return;
     }
-    if (pay !== "cod") {
-      setMsg(
-        "Orders are fulfilled with cash on delivery. Pay the rider when your parcel arrives.",
+
+    if (paymentMethod === "card") {
+      const cardErr = validateCardInputs(
+        cardNumber,
+        cardName,
+        cardExpiry,
+        cardCvv,
       );
-      return;
+      if (cardErr) {
+        setMsg(cardErr);
+        return;
+      }
     }
+
+    const num = digitsOnly(cardNumber);
+    const cardLast4 = num.slice(-4);
+
     setSubmitting(true);
     try {
       const res = await fetch("/api/orders", {
@@ -61,17 +98,20 @@ export default function CheckoutPage() {
         credentials: "include",
         body: JSON.stringify({
           items,
+          deliveryType,
           shippingAddress: {
             fullName,
-            line1,
-            city,
-            postalCode,
+            line1: deliveryType === "pickup" ? "Store pickup" : line1,
+            city: deliveryType === "pickup" ? "Pickup" : city,
+            postalCode: deliveryType === "pickup" ? "—" : postalCode,
             phone,
           },
-          shippingMethod: "Standard",
-          shippingCost: SHIPPING_STANDARD,
-          paymentMethod: "cod",
-          billingSameAsShipping: billingSame,
+          shippingMethod:
+            deliveryType === "pickup" ? "Store pickup" : "Standard delivery",
+          shippingCost: shipping,
+          paymentMethod,
+          cardLast4: paymentMethod === "card" ? cardLast4 : undefined,
+          billingSameAsShipping: true,
         }),
       });
       const data = await res.json();
@@ -79,284 +119,307 @@ export default function CheckoutPage() {
         setMsg(
           typeof data.error === "string"
             ? data.error
-            : "Could not place order. Sign in if your session expired.",
+            : res.status === 401
+              ? "Please sign in to place an order."
+              : "Could not place order. Is the backend running?",
         );
         return;
       }
-      setDoneId(data.orderId as string);
+      setSuccess({
+        orderId: data.orderId as string,
+        paymentMethod: (data.paymentMethod as PaymentMethod) ?? paymentMethod,
+        deliveryType: (data.deliveryType as DeliveryType) ?? deliveryType,
+      });
       clear();
       router.refresh();
     } catch {
-      setMsg("Network error.");
+      setMsg(
+        "Cannot reach the server. Run: cd backend && npm run dev",
+      );
     } finally {
       setSubmitting(false);
     }
   }
 
-  if (doneId) {
+  function successMessage(info: SuccessInfo) {
+    if (info.deliveryType === "pickup") return copy.checkout.successPickup;
+    if (info.paymentMethod === "card") return copy.checkout.successCard;
+    return copy.checkout.successCod;
+  }
+
+  function placeOrderLabel() {
+    if (deliveryType === "pickup") return copy.checkout.placeOrderPickup;
+    if (paymentMethod === "card") return copy.checkout.placeOrderCard;
+    return copy.checkout.placeOrderCod;
+  }
+
+  if (success) {
     return (
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-4 py-20">
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-8 text-center">
-          <p className="text-sm font-medium text-emerald-400">Order placed</p>
-          <h1 className="mt-2 text-2xl font-semibold">Thank you</h1>
-          <p className="mt-2 text-sm text-zinc-500">
-            Reference <span className="font-mono text-zinc-300">{doneId}</span>
+        <div className="rounded-3xl border border-emerald-500/20 bg-gradient-to-b from-emerald-950/40 to-zinc-900/80 p-10 text-center shadow-xl">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-2xl text-emerald-400">
+            ✓
+          </div>
+          <h1 className="mt-5 text-2xl font-bold text-white">Order confirmed</h1>
+          <p className="mt-2 text-sm text-zinc-400">
+            Reference{" "}
+            <span className="font-mono font-semibold text-zinc-200">
+              {success.orderId}
+            </span>
           </p>
-          <p className="mt-4 text-sm text-zinc-400">
-            Pay cash to the rider on delivery. We never ask for advance payment
-            on delivery orders.
+          <p className="mt-5 text-sm leading-relaxed text-zinc-400">
+            {successMessage(success)}
           </p>
+          <Link
+            href="/store"
+            className="mt-8 inline-flex rounded-xl bg-amber-400 px-6 py-3 text-sm font-bold text-zinc-950 transition hover:bg-amber-300"
+          >
+            Continue shopping
+          </Link>
         </div>
       </main>
     );
   }
 
-  if (items.length === 0) {
-    return null;
-  }
+  if (items.length === 0) return null;
 
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-12 md:py-16">
-      <h1 className="text-2xl font-semibold tracking-tight">Checkout</h1>
+    <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:py-14">
+      <header className="mb-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-amber-400">
+          Checkout
+        </p>
+        <h1 className="mt-2 text-3xl font-bold text-white">Complete your order</h1>
+        <p className="mt-2 text-sm text-zinc-400">{copy.checkout.subtitle}</p>
+      </header>
 
-      <form onSubmit={placeOrder} className="mt-10 flex flex-col gap-10">
-          <section>
-            <h2 className="text-2xl font-semibold">Shipping method</h2>
-            <label className="mt-4 flex cursor-pointer items-center justify-between rounded-xl border border-zinc-700 bg-zinc-900/40 px-4 py-4">
-              <span className="font-medium">Standard</span>
-              <span className="text-zinc-300">
-                Rs {SHIPPING_STANDARD.toFixed(2)}
-              </span>
-            </label>
+      <form
+        onSubmit={placeOrder}
+        className="grid gap-8 lg:grid-cols-[1fr_340px] lg:items-start"
+      >
+        <div className="space-y-6">
+          <section className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-6">
+            <h2 className="text-lg font-semibold text-white">
+              {copy.checkout.deliveryTitle}
+            </h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <OptionTile
+                name="deliveryType"
+                value="delivery"
+                checked={deliveryType === "delivery"}
+                onChange={() => setDeliveryType("delivery")}
+                title={copy.checkout.deliveryHome}
+                description={copy.checkout.deliveryHomeDesc}
+                icon="🚚"
+              />
+              <OptionTile
+                name="deliveryType"
+                value="pickup"
+                checked={deliveryType === "pickup"}
+                onChange={() => setDeliveryType("pickup")}
+                title={copy.checkout.deliveryPickup}
+                description={copy.checkout.deliveryPickupDesc}
+                icon="🏪"
+              />
+            </div>
           </section>
 
-          <section>
-            <h2 className="text-2xl font-semibold">Shipping address</h2>
-            <div className="mt-4 grid gap-4">
-              <label className="flex flex-col gap-1 text-sm">
+          <section className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-6">
+            <h2 className="text-lg font-semibold text-white">
+              {deliveryType === "pickup" ? "Contact details" : "Delivery address"}
+            </h2>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <label className="flex flex-col gap-1.5 text-sm sm:col-span-2">
                 <span className="text-zinc-400">Full name</span>
                 <input
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-zinc-100 outline-none focus:border-rose-500/50 focus:ring-2 focus:ring-rose-500/30"
+                  className={INPUT}
                 />
               </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-zinc-400">Address line</span>
-                <input
-                  required
-                  value={line1}
-                  onChange={(e) => setLine1(e.target.value)}
-                  className="rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-zinc-100 outline-none focus:border-rose-500/50 focus:ring-2 focus:ring-rose-500/30"
-                />
-              </label>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="flex flex-col gap-1 text-sm">
-                  <span className="text-zinc-400">City</span>
-                  <input
-                    required
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-zinc-100 outline-none focus:border-rose-500/50 focus:ring-2 focus:ring-rose-500/30"
-                  />
-                </label>
-                <label className="flex flex-col gap-1 text-sm">
-                  <span className="text-zinc-400">Postal code</span>
-                  <input
-                    required
-                    value={postalCode}
-                    onChange={(e) => setPostalCode(e.target.value)}
-                    className="rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-zinc-100 outline-none focus:border-rose-500/50 focus:ring-2 focus:ring-rose-500/30"
-                  />
-                </label>
-              </div>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-zinc-400">Phone</span>
+              {deliveryType === "delivery" ? (
+                <>
+                  <label className="flex flex-col gap-1.5 text-sm sm:col-span-2">
+                    <span className="text-zinc-400">Street address</span>
+                    <input
+                      required
+                      value={line1}
+                      onChange={(e) => setLine1(e.target.value)}
+                      className={INPUT}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5 text-sm">
+                    <span className="text-zinc-400">City</span>
+                    <input
+                      required
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className={INPUT}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5 text-sm">
+                    <span className="text-zinc-400">Postal code</span>
+                    <input
+                      required
+                      value={postalCode}
+                      onChange={(e) => setPostalCode(e.target.value)}
+                      className={INPUT}
+                    />
+                  </label>
+                </>
+              ) : null}
+              <label className="flex flex-col gap-1.5 text-sm sm:col-span-2">
+                <span className="text-zinc-400">Mobile number</span>
                 <input
                   required
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-zinc-100 outline-none focus:border-rose-500/50 focus:ring-2 focus:ring-rose-500/30"
+                  placeholder="03XX XXXXXXX"
+                  className={INPUT}
                 />
               </label>
             </div>
           </section>
 
-          <section>
-            <div className="flex flex-wrap items-baseline gap-2">
-              <h2 className="text-2xl font-semibold">Payment</h2>
-              <span className="text-sm text-zinc-500">
-                All transactions are secure and encrypted.
-              </span>
-            </div>
-            <div className="mt-4 flex flex-col gap-3">
-              <label
-                className={`flex cursor-pointer items-center justify-between rounded-xl border px-4 py-4 ${
-                  pay === "card"
-                    ? "border-rose-500/50 bg-zinc-950"
-                    : "border-zinc-700 bg-zinc-900/40"
-                }`}
-              >
-                <span className="flex items-center gap-3">
-                  <input
-                    type="radio"
-                    name="pay"
-                    checked={pay === "card"}
-                    onChange={() => setPay("card")}
-                    className="accent-rose-500"
-                  />
-                  Debit / Credit card
-                </span>
-                <span className="flex gap-1 text-xs text-zinc-500">
-                  Visa · Mastercard
-                </span>
-              </label>
-              <label
-                className={`flex cursor-pointer items-center justify-between rounded-xl border px-4 py-4 ${
-                  pay === "cod"
-                    ? "border-rose-500/50 bg-zinc-900/40"
-                    : "border-zinc-700 bg-zinc-900/40"
-                }`}
-              >
-                <span className="flex items-center gap-3">
-                  <input
-                    type="radio"
-                    name="pay"
-                    checked={pay === "cod"}
-                    onChange={() => setPay("cod")}
-                    className="accent-rose-500"
-                  />
-                  Cash on delivery
-                </span>
-                <span className="text-xs font-medium text-emerald-400/90">
-                  Default
-                </span>
-              </label>
+          <section className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-6">
+            <h2 className="text-lg font-semibold text-white">
+              {copy.checkout.paymentTitle}
+            </h2>
+            <div className="mt-4 space-y-3">
+              <OptionTile
+                name="paymentMethod"
+                value="cod"
+                checked={paymentMethod === "cod"}
+                onChange={() => setPaymentMethod("cod")}
+                title={copy.checkout.codTitle}
+                description={copy.checkout.codDesc}
+                icon="💵"
+                recommended
+              />
+              <OptionTile
+                name="paymentMethod"
+                value="card"
+                checked={paymentMethod === "card"}
+                onChange={() => setPaymentMethod("card")}
+                title={copy.checkout.cardTitle}
+                description={copy.checkout.cardDesc}
+                icon="💳"
+              />
             </div>
 
-            {pay === "card" ? (
-              <div className="mt-4 grid gap-4 rounded-xl border border-zinc-700 bg-zinc-950/90 p-4">
-                <p className="text-sm text-zinc-500">
-                  Card fields are for preview only. Tech Tonic completes orders
-                  with Cash on Delivery — pay the rider at delivery.
+            {paymentMethod === "card" ? (
+              <div className="mt-5 space-y-4 rounded-xl border border-zinc-700/80 bg-zinc-950/60 p-4">
+                <p className="text-xs text-zinc-500">
+                  {copy.checkout.cardSecureNote}
                 </p>
-                <label className="flex flex-col gap-1 text-sm">
-                  <span className="text-zinc-400">Name on card</span>
-                  <input
-                    value={cardName}
-                    onChange={(e) => setCardName(e.target.value)}
-                    autoComplete="cc-name"
-                    className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100"
-                  />
-                </label>
-                <label className="flex flex-col gap-1 text-sm">
+                <label className="flex flex-col gap-1.5 text-sm">
                   <span className="text-zinc-400">Card number</span>
                   <input
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
+                    required
                     inputMode="numeric"
-                    placeholder="•••• •••• •••• ••••"
-                    className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100"
+                    autoComplete="cc-number"
+                    value={cardNumber}
+                    onChange={(e) =>
+                      setCardNumber(formatCardNumber(e.target.value))
+                    }
+                    placeholder="1234 5678 9012 3456"
+                    className={`${INPUT} font-mono`}
+                  />
+                </label>
+                <label className="flex flex-col gap-1.5 text-sm">
+                  <span className="text-zinc-400">Name on card</span>
+                  <input
+                    required
+                    autoComplete="cc-name"
+                    value={cardName}
+                    onChange={(e) => setCardName(e.target.value)}
+                    className={INPUT}
                   />
                 </label>
                 <div className="grid grid-cols-2 gap-4">
-                  <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-zinc-400">Expiry</span>
+                  <label className="flex flex-col gap-1.5 text-sm">
+                    <span className="text-zinc-400">Expiry (MM/YY)</span>
                     <input
+                      required
+                      inputMode="numeric"
+                      autoComplete="cc-exp"
                       value={cardExpiry}
-                      onChange={(e) => setCardExpiry(e.target.value)}
-                      placeholder="MM / YY"
-                      className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100"
+                      onChange={(e) =>
+                        setCardExpiry(formatExpiry(e.target.value))
+                      }
+                      placeholder="MM/YY"
+                      className={`${INPUT} font-mono`}
                     />
                   </label>
-                  <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-zinc-400">CVC</span>
+                  <label className="flex flex-col gap-1.5 text-sm">
+                    <span className="text-zinc-400">CVV</span>
                     <input
-                      value={cardCvc}
-                      onChange={(e) => setCardCvc(e.target.value)}
-                      className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100"
+                      required
+                      type="password"
+                      inputMode="numeric"
+                      autoComplete="cc-csc"
+                      maxLength={4}
+                      value={cardCvv}
+                      onChange={(e) =>
+                        setCardCvv(digitsOnly(e.target.value).slice(0, 4))
+                      }
+                      placeholder="•••"
+                      className={`${INPUT} font-mono`}
                     />
                   </label>
                 </div>
-              </div>
-            ) : (
-              <div className="mt-4 flex gap-3 rounded-xl border border-amber-500/30 bg-amber-950/40 p-4 text-sm text-amber-100/90">
-                <span className="text-lg" aria-hidden>
-                  🚨
-                </span>
-                <p>
-                  <strong className="text-amber-200">Beware of fraud!</strong> We
-                  We never ask for advance payment. Pay only to the
-                  rider at the time of delivery.
-                </p>
-              </div>
-            )}
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold">Billing address</h2>
-            <div className="mt-4 flex flex-col gap-3">
-              <label
-                className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-4 ${
-                  billingSame
-                    ? "border-rose-500/50 bg-zinc-900/40"
-                    : "border-zinc-700 bg-zinc-900/40"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="bill"
-                  checked={billingSame}
-                  onChange={() => setBillingSame(true)}
-                  className="accent-rose-500"
-                />
-                Same as shipping address
-              </label>
-              <label
-                className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-4 ${
-                  !billingSame
-                    ? "border-rose-500/50 bg-zinc-900/40"
-                    : "border-zinc-700 bg-zinc-900/40"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="bill"
-                  checked={!billingSame}
-                  onChange={() => setBillingSame(false)}
-                  className="accent-rose-500"
-                />
-                Use a different billing address
-              </label>
-            </div>
-          </section>
-
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <button
-                type="button"
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-400">
-                <span aria-hidden>🏷</span> Add discount
-              </button>
-              <div className="flex items-center justify-end gap-3">
-                <div className="text-right">
-                  <p className="text-xs uppercase tracking-wide text-zinc-500">
-                    Total · {itemCount} item{itemCount !== 1 ? "s" : ""}
-                  </p>
-                  <p className="text-2xl font-semibold text-zinc-100">
-                    PKR{" "}
-                    <span className="tabular-nums">
-                      Rs {total.toLocaleString("en-PK")}
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {["Visa", "Mastercard", "PayPak"].map((brand) => (
+                    <span
+                      key={brand}
+                      className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-400"
+                    >
+                      {brand}
                     </span>
-                  </p>
-                  <p className="text-xs text-zinc-500">
-                    Including Rs {tax.toFixed(2)} in taxes
-                  </p>
+                  ))}
                 </div>
               </div>
-            </div>
+            ) : null}
+          </section>
+        </div>
+
+        <aside className="lg:sticky lg:top-28">
+          <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/50 p-6">
+            <h2 className="text-lg font-semibold text-white">Order summary</h2>
+            <ul className="mt-4 max-h-48 space-y-3 overflow-y-auto">
+              {items.map((item) => (
+                <li
+                  key={item.productId}
+                  className="flex justify-between gap-3 border-b border-zinc-800/60 pb-3 text-sm last:border-0 last:pb-0"
+                >
+                  <span className="min-w-0 text-zinc-300">
+                    {item.name}
+                    <span className="text-zinc-500"> × {item.qty}</span>
+                  </span>
+                  <span className="shrink-0 font-medium tabular-nums text-zinc-100">
+                    {formatPkr(item.price * item.qty)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <dl className="mt-5 space-y-2 border-t border-zinc-800 pt-5 text-sm">
+              <SummaryRow label="Subtotal" value={formatPkr(subtotal)} />
+              <SummaryRow
+                label={
+                  deliveryType === "pickup" ? "Pickup" : "Delivery"
+                }
+                value={
+                  shipping === 0 ? "Free" : formatPkr(shipping)
+                }
+              />
+              <SummaryRow
+                label={`Total (${itemCount} items)`}
+                value={formatPkr(total)}
+                bold
+              />
+            </dl>
             {msg ? (
               <p className="mt-4 text-sm text-rose-400" role="alert">
                 {msg}
@@ -364,17 +427,101 @@ export default function CheckoutPage() {
             ) : null}
             <button
               type="submit"
-              disabled={submitting || pay !== "cod"}
-              className="mt-6 w-full rounded-xl bg-rose-500 py-4 text-sm font-semibold text-white shadow-lg shadow-rose-900/30 hover:bg-rose-400 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={submitting}
+              className="mt-6 w-full rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 py-4 text-sm font-bold text-zinc-950 shadow-lg shadow-amber-500/20 transition hover:brightness-105 disabled:opacity-60"
             >
-              {submitting
-                ? "Placing order…"
-                : pay === "cod"
-                  ? "Place order"
-                  : "Select cash on delivery to place order"}
+              {submitting ? "Placing order…" : placeOrderLabel()}
             </button>
-          </section>
+            <p className="mt-3 text-center text-xs text-zinc-500">
+              {paymentMethod === "cod"
+                ? copy.delivery.note
+                : "Card payment is verified before dispatch."}
+            </p>
+          </div>
+        </aside>
       </form>
     </main>
+  );
+}
+
+function OptionTile({
+  name,
+  value,
+  checked,
+  onChange,
+  title,
+  description,
+  icon,
+  recommended,
+}: {
+  name: string;
+  value: string;
+  checked: boolean;
+  onChange: () => void;
+  title: string;
+  description: string;
+  icon: string;
+  recommended?: boolean;
+}) {
+  return (
+    <label
+      className={`relative flex cursor-pointer gap-3 rounded-xl border p-4 transition ${
+        checked
+          ? "border-amber-500/60 bg-amber-500/10 ring-1 ring-amber-500/30"
+          : "border-zinc-700/80 bg-zinc-950/40 hover:border-zinc-600"
+      }`}
+    >
+      <input
+        type="radio"
+        name={name}
+        value={value}
+        checked={checked}
+        onChange={onChange}
+        className="sr-only"
+      />
+      <span className="text-2xl" aria-hidden>
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="flex flex-wrap items-center gap-2">
+          <span className="font-semibold text-zinc-100">{title}</span>
+          {recommended ? (
+            <span className="rounded-full bg-amber-400/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-300">
+              Popular
+            </span>
+          ) : null}
+        </span>
+        <span className="mt-1 block text-xs leading-relaxed text-zinc-400">
+          {description}
+        </span>
+      </span>
+      <span
+        className={`mt-1 h-4 w-4 shrink-0 rounded-full border-2 ${
+          checked ? "border-amber-400 bg-amber-400" : "border-zinc-600"
+        }`}
+        aria-hidden
+      />
+    </label>
+  );
+}
+
+function SummaryRow({
+  label,
+  value,
+  bold,
+}: {
+  label: string;
+  value: string;
+  bold?: boolean;
+}) {
+  return (
+    <div
+      className={`flex justify-between gap-2 ${bold ? "text-base font-semibold text-white" : "text-zinc-400"}`}
+    >
+      <dt>{label}</dt>
+      <dd className="tabular-nums text-zinc-100">
+        {value === "Free" ? value : `PKR ${value}`}
+      </dd>
+    </div>
   );
 }

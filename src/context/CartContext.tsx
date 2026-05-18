@@ -22,6 +22,8 @@ type CartContextValue = {
   setQty: (productId: string, qty: number) => void;
   removeItem: (productId: string) => void;
   clear: () => void;
+  /** Buy now: cart contains only this item. */
+  replaceWithItem: (item: Omit<CartItem, "qty"> & { qty?: number }) => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -69,9 +71,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clear = useCallback(() => setItems([]), []);
 
+  const replaceWithItem = useCallback(
+    (item: Omit<CartItem, "qty"> & { qty?: number }) => {
+      setItems([
+        {
+          productId: item.productId,
+          name: item.name,
+          price: item.price,
+          qty: item.qty ?? 1,
+        },
+      ]);
+    },
+    [],
+  );
+
   const value = useMemo(
-    () => ({ items, addItem, setQty, removeItem, clear }),
-    [items, addItem, setQty, removeItem, clear],
+    () => ({ items, addItem, setQty, removeItem, clear, replaceWithItem }),
+    [items, addItem, setQty, removeItem, clear, replaceWithItem],
   );
 
   return (

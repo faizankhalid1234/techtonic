@@ -11,8 +11,9 @@ const MONGODB_URI = process.env.MONGODB_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
 
 if (!MONGODB_URI) {
-  console.error("Missing MONGODB_URI in .env");
-  process.exit(1);
+  console.warn(
+    "MONGODB_URI not set — users and orders will use backend/data/*.json",
+  );
 }
 if (!JWT_SECRET) {
   console.error("Missing JWT_SECRET in .env");
@@ -44,5 +45,5 @@ app.use((err, _req, res, _next) => {
 
 app.listen(PORT, () => {
   console.log(`Tech Tonic API http://127.0.0.1:${PORT}`);
-  scheduleDbReconnect(MONGODB_URI);
+  if (MONGODB_URI) scheduleDbReconnect(MONGODB_URI);
 });

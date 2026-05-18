@@ -38,6 +38,30 @@ export const copy = {
     short: "Cash on delivery",
     note: "Pay the delivery rider when your order arrives. No advance payment required.",
   },
+  checkout: {
+    subtitle: "Choose delivery, payment method, and confirm your order.",
+    deliveryTitle: "How do you want your order?",
+    deliveryHome: "Home delivery",
+    deliveryHomeDesc: "Nationwide courier · PKR 250 delivery fee",
+    deliveryPickup: "Store pickup",
+    deliveryPickupDesc: "Collect from Tech Tonic · No delivery fee",
+    paymentTitle: "Payment method",
+    codTitle: "Cash on delivery",
+    codDesc: "Pay when you receive your order. Most customers use this.",
+    cardTitle: "Debit / credit card",
+    cardDesc: "Pay online with your bank card (Visa, Mastercard, etc.).",
+    cardSecureNote:
+      "Card details are used to place your order. Full card numbers are never stored on our servers.",
+    placeOrderCod: "Place order · Cash on delivery",
+    placeOrderCard: "Place order · Pay by card",
+    placeOrderPickup: "Place order · Store pickup",
+    successCod:
+      "We will call you to confirm delivery. Keep your phone on and have cash ready for the rider.",
+    successCard:
+      "Your card payment will be verified and we will call you to confirm dispatch.",
+    successPickup:
+      "We will call you when your order is ready for pickup at our store.",
+  },
   ticker: [
     "Nationwide delivery available",
     "Original-color display panels",
