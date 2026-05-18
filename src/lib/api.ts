@@ -14,7 +14,7 @@ export function authErrorMessage(
   fallback: string,
 ): string {
   if (res.status === 502 || res.status === 504) {
-    return "Server is not running. Start the backend: cd backend && npm run dev";
+    return "Cannot reach the API. Try again later or check backend-techtonic.vercel.app";
   }
   if (typeof data?.error === "string" && data.error.length > 0) {
     return data.error;

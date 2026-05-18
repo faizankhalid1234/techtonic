@@ -40,7 +40,7 @@ export default function SignupPage() {
       router.push("/");
       router.refresh();
     } catch {
-      setError("Connection failed. Please start the backend server.");
+      setError("Connection failed. Please try again later.");
     } finally {
       setLoading(false);
     }

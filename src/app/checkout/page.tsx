@@ -121,7 +121,7 @@ export default function CheckoutPage() {
             ? data.error
             : res.status === 401
               ? "Please sign in to place an order."
-              : "Could not place order. Is the backend running?",
+              : "Could not place order. Please try again.",
         );
         return;
       }
@@ -134,7 +134,7 @@ export default function CheckoutPage() {
       router.refresh();
     } catch {
       setMsg(
-        "Cannot reach the server. Run: cd backend && npm run dev",
+        "Cannot reach the server. Check backend-techtonic.vercel.app",
       );
     } finally {
       setSubmitting(false);

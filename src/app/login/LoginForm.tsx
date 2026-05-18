@@ -36,7 +36,7 @@ export function LoginForm() {
       router.push(from === "checkout" ? "/checkout" : "/");
       router.refresh();
     } catch {
-      setError("Connection failed. Please start the backend server.");
+      setError("Connection failed. Please try again later.");
     } finally {
       setLoading(false);
     }

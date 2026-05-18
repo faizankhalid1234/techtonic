@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { resolveBackendUrl } from "@/lib/backend-url";
 
-const backend =
-  process.env.BACKEND_URL?.replace(/\/$/, "") || "http://127.0.0.1:4000";
+const backend = resolveBackendUrl(process.env.BACKEND_URL);
 
 export async function proxyToBackend(
   req: NextRequest,
@@ -25,7 +25,7 @@ export async function proxyToBackend(
     });
   } catch {
     return NextResponse.json(
-      { error: "Cannot reach API. Run: cd backend && npm run dev" },
+      { error: "Cannot reach API. Check https://backend-techtonic.vercel.app" },
       { status: 502 },
     );
   }
