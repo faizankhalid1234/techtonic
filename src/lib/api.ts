@@ -20,6 +20,8 @@ export function authErrorMessage(
     return data.error;
   }
   if (res.status === 401) return "Invalid email or password.";
-  if (res.status === 409) return "An account with this email already exists.";
+  if (res.status === 409) {
+    return "An account with this email already exists. Please sign in.";
+  }
   return fallback;
 }

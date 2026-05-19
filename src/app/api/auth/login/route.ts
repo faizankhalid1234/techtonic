@@ -1,10 +1,6 @@
 import { NextRequest } from "next/server";
-import { proxyToBackend } from "@/lib/backend-proxy";
+import { handleLogin } from "@/lib/server/auth-handlers";
 
 export async function POST(req: NextRequest) {
-  const body = await req.text();
-  return proxyToBackend(req, "/api/auth/login", {
-    method: "POST",
-    body,
-  });
+  return handleLogin(req);
 }

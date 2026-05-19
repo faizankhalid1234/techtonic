@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
-import { proxyToBackend } from "@/lib/backend-proxy";
+import { handleMe } from "@/lib/server/auth-handlers";
 
 export async function GET(req: NextRequest) {
-  return proxyToBackend(req, "/api/auth/me", { method: "GET" });
+  return handleMe(req);
 }

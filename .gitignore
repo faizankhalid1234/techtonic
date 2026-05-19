@@ -31,6 +31,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# local auth / order data (user-specific)
+/data/users.json
+/data/orders.json
+/backend/data/users.json
+/backend/data/orders.json
+
 # env files (can opt-in for committing if needed)
 .env*
 

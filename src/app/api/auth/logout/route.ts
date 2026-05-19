@@ -1,6 +1,5 @@
-import { NextRequest } from "next/server";
-import { proxyToBackend } from "@/lib/backend-proxy";
+import { handleLogout } from "@/lib/server/auth-handlers";
 
-export async function POST(req: NextRequest) {
-  return proxyToBackend(req, "/api/auth/logout", { method: "POST" });
+export async function POST() {
+  return handleLogout();
 }

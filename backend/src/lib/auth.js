@@ -33,7 +33,11 @@ export async function verifySessionToken(token, secret) {
 }
 
 export function sessionCookieOptions() {
-  const secure = process.env.NODE_ENV === "production";
+  const secure =
+    process.env.COOKIE_SECURE === "true" ||
+    (process.env.NODE_ENV === "production" &&
+      process.env.COOKIE_SECURE !== "false" &&
+      Boolean(process.env.VERCEL));
   return {
     httpOnly: true,
     secure,

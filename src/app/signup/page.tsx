@@ -34,6 +34,12 @@ export default function SignupPage() {
       });
       const data = await parseJsonResponse<AuthResponse>(res);
       if (!res.ok) {
+        if (res.status === 409) {
+          setError(
+            "This email is already registered. Sign in with your password instead.",
+          );
+          return;
+        }
         setError(authErrorMessage(res, data, "Could not create account."));
         return;
       }

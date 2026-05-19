@@ -1,10 +1,6 @@
 import { NextRequest } from "next/server";
-import { proxyToBackend } from "@/lib/backend-proxy";
+import { handleCreateOrder } from "@/lib/server/order-handlers";
 
 export async function POST(req: NextRequest) {
-  const body = await req.text();
-  return proxyToBackend(req, "/api/orders", {
-    method: "POST",
-    body,
-  });
+  return handleCreateOrder(req);
 }
