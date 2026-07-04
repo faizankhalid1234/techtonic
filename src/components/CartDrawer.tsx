@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
-import { ProductThumb } from "@/components/ProductThumb";
+import { CartItemGallery } from "@/components/CartItemGallery";
 import { copy } from "@/lib/copy";
 import type { CartItem } from "@/context/CartContext";
 import { imageForVariant } from "@/lib/storeCatalog";
@@ -58,31 +58,24 @@ export function CartDrawer({
         role="dialog"
         aria-modal="true"
         aria-label="Shopping cart"
-        className={`cart-drawer fixed bottom-0 right-0 top-0 z-[60] flex w-full max-w-[min(100%,26rem)] flex-col border-l border-amber-500/15 bg-gradient-to-b from-zinc-950 via-zinc-950 to-zinc-900 shadow-[-24px_0_80px_rgba(0,0,0,0.55)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:max-w-md ${
+        className={`cart-drawer fixed bottom-0 right-0 top-0 z-[60] flex w-full max-w-[min(100%,28rem)] flex-col bg-zinc-100 shadow-[-8px_0_32px_rgba(0,0,0,0.15)] transition-transform duration-400 ease-out sm:max-w-md ${
           open ? "translate-x-0" : "translate-x-full pointer-events-none"
         }`}
       >
-        <div
-          className="pointer-events-none absolute -left-20 top-24 h-56 w-56 rounded-full bg-amber-500/10 blur-3xl"
-          aria-hidden
-        />
-        <header className="relative z-10 flex items-start justify-between gap-3 border-b border-white/[0.06] px-5 pb-4 pt-5 sm:px-6 sm:pt-6">
+        <header className="flex items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 py-4 sm:px-5">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.32em] text-amber-400/90">
-              {copy.brand}
-            </p>
-            <h2 className="mt-1 flex items-center gap-2 text-2xl font-bold tracking-tight text-white">
-              {copy.cart.title}
-              <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-amber-400/20 px-2 text-sm font-semibold text-amber-200 ring-1 ring-amber-400/30">
-                {itemCount}
+            <h2 className="text-lg font-semibold text-zinc-900">
+              Shopping cart
+              <span className="ml-2 text-sm font-normal text-zinc-500">
+                ({itemCount} {itemCount === 1 ? "item" : "items"})
               </span>
             </h2>
-            <p className="mt-1 text-xs text-zinc-500">{copy.cart.codNote}</p>
+            <p className="mt-0.5 text-xs text-zinc-500">{copy.cart.codNote}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-zinc-700/80 bg-zinc-900/80 p-2.5 text-zinc-400 transition hover:border-zinc-500 hover:text-white"
+            className="rounded-sm p-2 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-800"
             aria-label="Close cart"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -90,7 +83,8 @@ export function CartDrawer({
             </svg>
           </button>
         </header>
-        <div className="mobile-scroll relative z-10 min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6">
+
+        <div className="mobile-scroll min-h-0 flex-1 overflow-y-auto bg-zinc-100 px-3 py-3 sm:px-4">
           {items.length === 0 ? (
             <EmptyCart onClose={onClose} />
           ) : (
@@ -106,31 +100,22 @@ export function CartDrawer({
             </ul>
           )}
         </div>
-        <footer className="relative z-10 border-t border-white/[0.06] bg-zinc-950/90 px-5 py-5 backdrop-blur-md sm:px-6">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                {copy.cart.subtotal}
-              </p>
-              <p className="mt-0.5 text-xs text-zinc-600">
-                {copy.cart.items(itemCount)} · PKR
-              </p>
-            </div>
-            <p className="text-3xl font-bold tabular-nums tracking-tight text-white">
-              {formatPkr(subtotal)}
-            </p>
+
+        <footer className="border-t border-zinc-200 bg-white px-4 py-4 sm:px-5">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-medium text-zinc-600">{copy.cart.subtotal}</span>
+            <span className="text-xl font-bold tabular-nums text-orange-500">
+              Rs. {formatPkr(subtotal)}
+            </span>
           </div>
           <Link
             href="/checkout"
             onClick={onClose}
-            className={`mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 px-4 py-3.5 text-sm font-bold text-zinc-950 shadow-lg shadow-amber-500/25 transition hover:shadow-amber-400/35 active:scale-[0.99] ${
+            className={`mt-3 flex w-full items-center justify-center rounded-sm bg-orange-500 py-3.5 text-sm font-bold uppercase tracking-wide text-white shadow-sm transition hover:bg-orange-600 active:scale-[0.99] ${
               items.length === 0 ? "pointer-events-none opacity-40" : ""
             }`}
           >
             {copy.cart.checkout}
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
           </Link>
         </footer>
       </aside>
@@ -147,7 +132,7 @@ function DrawerBackdrop({
 }) {
   return (
     <div
-      className={`fixed inset-0 z-[55] bg-zinc-950/70 transition-opacity duration-400 md:backdrop-blur-sm ${
+      className={`fixed inset-0 z-[55] bg-black/40 transition-opacity duration-300 ${
         open ? "opacity-100" : "pointer-events-none opacity-0"
       }`}
       onClick={onClose}
@@ -158,23 +143,24 @@ function DrawerBackdrop({
 
 function EmptyCart({ onClose }: { onClose: () => void }) {
   return (
-    <div className="flex min-h-[12rem] flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-700/60 bg-zinc-900/30 px-6 py-10 text-center">
-      <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400/20 to-fuchsia-500/10 ring-1 ring-amber-400/20">
-        <svg className="h-7 w-7 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-        </svg>
-      </span>
-      <p className="mt-4 text-sm font-medium text-zinc-300">{copy.cart.empty}</p>
+    <div className="rounded-sm border border-dashed border-zinc-300 bg-white px-6 py-12 text-center">
+      <p className="text-sm font-medium text-zinc-700">{copy.cart.empty}</p>
       <p className="mt-1 text-xs text-zinc-500">{copy.cart.emptyHint}</p>
       <Link
         href="/store"
         onClick={onClose}
-        className="mt-5 rounded-full bg-amber-400 px-5 py-2.5 text-sm font-semibold text-zinc-950 transition hover:bg-amber-300"
+        className="mt-5 inline-block rounded-sm bg-orange-500 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600"
       >
         {copy.cart.browse}
       </Link>
     </div>
   );
+}
+
+function cartImagesForItem(item: CartItem): string[] {
+  if (item.images?.length) return item.images;
+  const found = imageForVariant(item.productId);
+  return found ? [found] : ["/featured-picks-v3.png"];
 }
 
 function CartLineItem({
@@ -187,25 +173,27 @@ function CartLineItem({
   removeItem: (productId: string) => void;
 }) {
   const lineTotal = item.price * item.qty;
-  const thumb = item.image ?? imageForVariant(item.productId);
+  const images = cartImagesForItem(item);
+
   return (
-    <li className="cart-item-enter group relative overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/50 p-4 ring-1 ring-white/[0.03] transition hover:border-amber-500/20 hover:bg-zinc-900/80">
-      <div
-        className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-amber-400/5 blur-2xl transition group-hover:bg-amber-400/10"
-        aria-hidden
-      />
-      <div className="flex gap-3">
-        <ProductThumb src={thumb} alt={item.name} size="sm" />
+    <li className="cart-item-enter overflow-hidden rounded-sm border border-zinc-200 bg-white shadow-sm">
+      <div className="flex gap-3 p-3">
+        <CartItemGallery images={images} alt={item.name} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold leading-snug text-zinc-50">{item.name}</p>
-          <PriceRow item={item} lineTotal={lineTotal} />
+          <p className="line-clamp-2 text-sm leading-snug text-zinc-800">
+            {item.name}
+          </p>
+          <p className="mt-1 text-lg font-medium text-orange-500">
+            Rs. {formatPkr(item.price)}
+          </p>
+          <p className="text-xs text-zinc-400">Unit price · PKR</p>
         </div>
       </div>
-      <div className="mt-4 flex items-center justify-between gap-3 pl-[3.75rem]">
-        <div className="inline-flex items-center rounded-full border border-zinc-700/80 bg-zinc-950/80 p-0.5 shadow-inner shadow-black/30">
+      <div className="flex items-center justify-between border-t border-zinc-100 bg-zinc-50/80 px-3 py-2.5">
+        <div className="inline-flex items-center rounded-sm border border-zinc-300 bg-white text-zinc-800">
           <button
             type="button"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-lg text-zinc-300 transition hover:bg-zinc-800 hover:text-white"
+            className="flex h-8 w-8 items-center justify-center text-base transition hover:bg-zinc-50"
             onClick={() =>
               item.qty <= 1
                 ? removeItem(item.productId)
@@ -215,57 +203,36 @@ function CartLineItem({
           >
             −
           </button>
-          <span className="min-w-[2rem] text-center text-sm font-bold tabular-nums text-amber-200">
+          <span className="min-w-[2rem] border-x border-zinc-300 text-center text-sm font-semibold tabular-nums">
             {item.qty}
           </span>
           <button
             type="button"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-lg text-zinc-300 transition hover:bg-zinc-800 hover:text-white"
+            className="flex h-8 w-8 items-center justify-center text-base transition hover:bg-zinc-50"
             onClick={() => setQty(item.productId, item.qty + 1)}
             aria-label="Increase quantity"
           >
             +
           </button>
         </div>
+        <div className="text-right">
+          <p className="text-[10px] uppercase tracking-wide text-zinc-400">
+            Line total
+          </p>
+          <p className="text-base font-bold tabular-nums text-zinc-900">
+            Rs. {formatPkr(lineTotal)}
+          </p>
+        </div>
+      </div>
+      <div className="border-t border-zinc-100 px-3 py-2">
         <button
           type="button"
-          className="text-xs font-medium text-rose-400/90 underline-offset-2 transition hover:text-rose-300 hover:underline"
+          className="text-xs font-medium text-rose-500 hover:text-rose-600 hover:underline"
           onClick={() => removeItem(item.productId)}
         >
           Remove
         </button>
       </div>
     </li>
-  );
-}
-
-function PriceRow({
-  item,
-  lineTotal,
-}: {
-  item: CartItem;
-  lineTotal: number;
-}) {
-  return (
-    <div className="mt-3 flex flex-wrap items-end justify-between gap-2">
-      <UnitPrice price={item.price} />
-      <div className="text-right">
-        <span className="text-[10px] text-zinc-500">× {item.qty}</span>
-        <p className="text-lg font-bold tabular-nums text-white">{formatPkr(lineTotal)}</p>
-      </div>
-    </div>
-  );
-}
-
-function UnitPrice({ price }: { price: number }) {
-  return (
-    <div>
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-        Unit
-      </span>
-      <p className="text-sm font-bold tabular-nums text-amber-300/90">
-        {formatPkr(price)} PKR
-      </p>
-    </div>
   );
 }

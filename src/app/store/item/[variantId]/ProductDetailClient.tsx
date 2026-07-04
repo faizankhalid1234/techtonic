@@ -1,15 +1,17 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AddToCartButton } from "@/components/AddToCartButton";
+import { ProductImageGallery } from "@/components/ProductImageGallery";
+import { QuantityStepper } from "@/components/QuantityStepper";
 import { useCart } from "@/context/CartContext";
 import {
   STORE_CATEGORIES,
   brandStoreHref,
   descriptionForProductDetail,
+  galleryImagesForLine,
   type StoreProductLine,
   type StoreVariant,
 } from "@/lib/storeCatalog";
@@ -27,167 +29,156 @@ export function ProductDetailClient({ line, variant }: Props) {
   const router = useRouter();
   const { addItem, replaceWithItem } = useCart();
   const [addedFlash, setAddedFlash] = useState(false);
+  const [qty, setQty] = useState(1);
 
   const cat = STORE_CATEGORIES.find((c) => c.id === line.category);
   const displayName = `${cat?.label ?? "Display"} — ${variant.label}`;
-  function addToCart() {
-    addItem({
+  const gallery = useMemo(() => galleryImagesForLine(line), [line]);
+  const primaryImage = gallery[0] ?? line.image;
+
+  const listPrice = Math.round(variant.price * 1.15);
+
+  function cartPayload() {
+    return {
       productId: variant.id,
       name: displayName,
       price: variant.price,
-      image: line.image,
-      qty: 1,
-    });
+      image: primaryImage,
+      images: gallery,
+      qty,
+    };
+  }
+
+  function addToCart() {
+    addItem(cartPayload());
     setAddedFlash(true);
     window.setTimeout(() => setAddedFlash(false), 2000);
   }
 
   function buyNow() {
-    replaceWithItem({
-      productId: variant.id,
-      name: displayName,
-      price: variant.price,
-      image: line.image,
-      qty: 1,
-    });
+    replaceWithItem(cartPayload());
     router.push("/checkout");
   }
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6 sm:pt-8 lg:pb-24">
       <nav
-        className="mb-8 flex flex-wrap items-center gap-2 text-sm text-zinc-500"
+        className="mb-6 flex flex-wrap items-center gap-1.5 text-sm text-zinc-500"
         aria-label="Breadcrumb"
       >
-        <Link href="/" className="transition hover:text-zinc-300">
+        <Link href="/" className="transition hover:text-orange-400">
           Home
         </Link>
-        <span aria-hidden>/</span>
-        <Link href="/store" className="transition hover:text-zinc-300">
+        <span aria-hidden className="text-zinc-600">
+          ›
+        </span>
+        <Link href="/store" className="transition hover:text-orange-400">
           Shop
         </Link>
-        <span aria-hidden>/</span>
+        <span aria-hidden className="text-zinc-600">
+          ›
+        </span>
         <Link
           href={brandStoreHref(line.category)}
-          className="transition hover:text-zinc-300"
+          className="transition hover:text-orange-400"
         >
           {cat?.label ?? line.category}
         </Link>
-        <span aria-hidden>/</span>
-        <span className="max-w-[12rem] truncate text-zinc-300 sm:max-w-md">
+        <span aria-hidden className="text-zinc-600">
+          ›
+        </span>
+        <span className="max-w-[14rem] truncate text-zinc-400 sm:max-w-md">
           {variant.label}
         </span>
       </nav>
 
-      <div className="grid gap-10 lg:grid-cols-2 lg:gap-12 lg:items-start">
-        <div className="lg:sticky lg:top-28">
-          <div className="relative aspect-square w-full overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-900 shadow-2xl shadow-black/40 ring-1 ring-white/[0.04]">
-            <Image
-              src={line.image}
-              alt={displayName}
-              fill
-              className="object-cover object-center"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              priority
-              unoptimized
-            />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-zinc-950/40 via-transparent to-transparent" />
-            <span className="absolute left-4 top-4 rounded-full border border-white/15 bg-black/70 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-amber-200 md:bg-black/50 md:backdrop-blur-md">
-              Tech Tonic
-            </span>
-          </div>
-        </div>
-
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-400">
-            {cat?.label ?? "Display panel"}
-          </p>
-          <h1 className="mt-2 text-2xl font-bold leading-tight tracking-tight text-zinc-50 sm:text-3xl lg:text-4xl">
-            {variant.label}
-          </h1>
-          <p className="mt-3 text-sm text-zinc-400">
-            {cat?.label} replacement display · Cash on delivery
-          </p>
-
-          <div className="mt-6 border-b border-zinc-800 pb-6">
-            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-              Price
-            </p>
-            <p className="mt-1 flex flex-wrap items-baseline gap-2">
-              <span className="text-4xl font-bold tabular-nums tracking-tight text-white sm:text-5xl">
-                {formatPkr(variant.price)}
-              </span>
-              <span className="text-lg font-medium text-zinc-400">PKR</span>
-            </p>
-            <p className="mt-2 text-sm text-zinc-500">
-              Cash on delivery at checkout. No advance payment required.
-            </p>
+      <div className="overflow-hidden rounded-lg bg-white shadow-xl shadow-black/20 ring-1 ring-zinc-200/80">
+        <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <div className="border-b border-zinc-100 p-4 sm:p-6 lg:border-b-0 lg:border-r">
+            <ProductImageGallery images={gallery} alt={displayName} />
           </div>
 
-          <div className="mt-6 space-y-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
-              About this panel
-            </h2>
-            <div className="space-y-4 text-base leading-[1.7] text-zinc-300">
+          <div className="flex flex-col p-5 sm:p-8">
+            <p className="text-xs font-medium text-sky-600">
+              Brand:{" "}
+              <span className="text-sky-700">{cat?.label ?? "Tech Tonic"}</span>
+            </p>
+            <h1 className="mt-2 text-xl font-normal leading-snug text-zinc-900 sm:text-2xl">
+              {displayName} — Tech Tonic replacement LCD panel, original colours,
+              responsive touch, cash on delivery.
+            </h1>
+
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
+              <span className="text-amber-500">★★★★★</span>
+              <span>Tech Tonic verified panel</span>
+            </div>
+
+            <div className="mt-6 border-b border-zinc-100 pb-6">
+              <p className="flex flex-wrap items-baseline gap-2">
+                <span className="text-3xl font-medium text-orange-500 sm:text-4xl">
+                  Rs. {formatPkr(variant.price)}
+                </span>
+                <span className="text-base text-zinc-400 line-through">
+                  Rs. {formatPkr(listPrice)}
+                </span>
+                <span className="rounded bg-orange-100 px-1.5 py-0.5 text-xs font-semibold text-orange-600">
+                  Panel price
+                </span>
+              </p>
+              <p className="mt-2 text-sm text-zinc-500">
+                Cash on delivery · Free pickup available
+              </p>
+            </div>
+
+            <div className="mt-6">
+              <QuantityStepper value={qty} onChange={setQty} />
+            </div>
+
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => buyNow()}
+                className="touch-manipulation min-h-[3rem] rounded-sm bg-sky-400 px-4 text-sm font-semibold uppercase tracking-wide text-white shadow-sm transition hover:bg-sky-500 active:scale-[0.99]"
+              >
+                Buy now
+              </button>
+              <AddToCartButton
+                onClick={() => addToCart()}
+                added={addedFlash}
+                variant="daraz"
+              />
+            </div>
+
+            <div className="mt-8 space-y-3 border-t border-zinc-100 pt-6 text-sm leading-relaxed text-zinc-600">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-800">
+                About this panel
+              </h2>
               {descriptionForProductDetail(line)
                 .split(/\n\n+/)
                 .filter(Boolean)
                 .map((para, i) => (
                   <p key={i}>{para.trim()}</p>
                 ))}
-            </div>
-            <ul className="grid gap-3 text-sm text-zinc-400">
-              <li className="flex gap-3">
-                <span className="mt-0.5 shrink-0 text-amber-500" aria-hidden>
-                  ✓
-                </span>
-                <span>
-                  You are viewing the{" "}
-                  <span className="font-semibold text-zinc-200">
+              <ul className="space-y-2 text-zinc-500">
+                <li>
+                  Variant:{" "}
+                  <strong className="font-semibold text-zinc-800">
                     {variant.label}
-                  </span>{" "}
-                  variant — cart and checkout use this exact SKU and price.
-                </span>
-              </li>
-              <li className="flex gap-3">
-                <span className="mt-0.5 shrink-0 text-amber-500" aria-hidden>
-                  ✓
-                </span>
-                Tech Tonic panel quality with responsive touch and stable
-                  brightness.
-              </li>
-              <li className="flex gap-3">
-                <span className="mt-0.5 shrink-0 text-amber-500" aria-hidden>
-                  ✓
-                </span>
-                Tech Tonic fulfilment — cash on delivery, no advance payment
-                  required.
-              </li>
-            </ul>
+                  </strong>
+                </li>
+                <li>Tech Tonic panel quality · COD checkout</li>
+              </ul>
+            </div>
           </div>
-
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <AddToCartButton onClick={() => addToCart()} added={addedFlash} />
-            <button
-              type="button"
-              onClick={() => buyNow()}
-              className="touch-manipulation inline-flex min-h-[3.25rem] flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-zinc-600 bg-zinc-900/40 px-8 text-base font-semibold text-zinc-100 shadow-lg shadow-black/20 transition hover:border-amber-500/50 hover:bg-zinc-900/70 active:scale-[0.99] sm:min-w-[200px]"
-            >
-              <svg className="h-5 w-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              Buy now
-            </button>
-          </div>
-
-          <Link
-            href={brandStoreHref(line.category)}
-            className="mt-8 inline-flex text-sm font-medium text-amber-400 transition hover:text-amber-300"
-          >
-            ← Back to {cat?.label ?? "brand"} models
-          </Link>
         </div>
       </div>
+
+      <Link
+        href={brandStoreHref(line.category)}
+        className="mt-8 inline-flex text-sm font-medium text-orange-400 transition hover:text-orange-300"
+      >
+        ← Back to {cat?.label ?? "brand"} models
+      </Link>
     </div>
   );
 }

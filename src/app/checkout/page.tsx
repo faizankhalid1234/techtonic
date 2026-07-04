@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useCart } from "@/context/CartContext";
-import { ProductThumb } from "@/components/ProductThumb";
+import { CartItemGallery } from "@/components/CartItemGallery";
 import { copy } from "@/lib/copy";
 import { imageForVariant } from "@/lib/storeCatalog";
 import {
@@ -390,26 +390,33 @@ export default function CheckoutPage() {
         <aside className="lg:sticky lg:top-28">
           <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/50 p-6">
             <h2 className="text-lg font-semibold text-white">Order summary</h2>
-            <ul className="mt-4 max-h-48 space-y-3 overflow-y-auto">
-              {items.map((item) => (
-                <li
-                  key={item.productId}
-                  className="flex items-center gap-3 border-b border-zinc-800/60 pb-3 text-sm last:border-0 last:pb-0"
-                >
-                  <ProductThumb
-                    src={item.image ?? imageForVariant(item.productId)}
-                    alt={item.name}
-                    size="sm"
-                  />
-                  <span className="min-w-0 flex-1 text-zinc-300">
-                    {item.name}
-                    <span className="text-zinc-500"> × {item.qty}</span>
-                  </span>
-                  <span className="shrink-0 font-medium tabular-nums text-zinc-100">
-                    {formatPkr(item.price * item.qty)}
-                  </span>
-                </li>
-              ))}
+            <ul className="mt-4 max-h-64 space-y-3 overflow-y-auto">
+              {items.map((item) => {
+                const images =
+                  item.images?.length
+                    ? item.images
+                    : [item.image ?? imageForVariant(item.productId)];
+                return (
+                  <li
+                    key={item.productId}
+                    className="flex gap-3 rounded-sm border border-zinc-700/80 bg-white p-3 text-sm"
+                  >
+                    <CartItemGallery images={images} alt={item.name} />
+                    <div className="min-w-0 flex-1">
+                      <p className="line-clamp-2 font-medium text-zinc-800">
+                        {item.name}
+                      </p>
+                      <p className="mt-1 text-orange-500">
+                        Rs. {formatPkr(item.price)}{" "}
+                        <span className="text-zinc-500">× {item.qty}</span>
+                      </p>
+                      <p className="mt-1 text-right font-semibold tabular-nums text-zinc-900">
+                        Rs. {formatPkr(item.price * item.qty)}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
             <dl className="mt-5 space-y-2 border-t border-zinc-800 pt-5 text-sm">
               <SummaryRow label="Subtotal" value={formatPkr(subtotal)} />

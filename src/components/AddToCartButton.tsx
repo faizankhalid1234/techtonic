@@ -4,13 +4,31 @@ type AddToCartButtonProps = {
   onClick: () => void;
   compact?: boolean;
   added?: boolean;
+  variant?: "default" | "daraz";
 };
 
 export function AddToCartButton({
   onClick,
   compact = false,
   added = false,
+  variant = "default",
 }: AddToCartButtonProps) {
+  if (variant === "daraz") {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={`touch-manipulation min-h-[3rem] rounded-sm px-4 text-sm font-semibold uppercase tracking-wide shadow-sm transition active:scale-[0.99] ${
+          added
+            ? "bg-emerald-500 text-white"
+            : "bg-orange-500 text-white hover:bg-orange-600"
+        }`}
+      >
+        {added ? "Added ✓" : "Add to cart"}
+      </button>
+    );
+  }
+
   if (compact) {
     return (
       <button

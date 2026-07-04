@@ -27,12 +27,26 @@ export type StoreProductLine = {
    * Falls back to `description` if omitted.
    */
   detailDescription?: string;
-  /** Put PNG/WebP in public/store/... and update path */
+  /** Primary panel photo (cart, cards) */
   image: string;
+  /** Extra panel angles for product gallery — defaults to shared panel shots */
+  gallery?: string[];
   variants: StoreVariant[];
 };
 
 const IMG = "/featured-picks-v3.png";
+
+/** Tech Tonic panel product photos only (not third-party listing images). */
+export const PANEL_GALLERY_IMAGES = [
+  "/featured-picks-v3.png",
+  "/featured-picks-v2.png",
+  "/featured-picks.png",
+] as const;
+
+export function galleryImagesForLine(line: StoreProductLine): string[] {
+  const extra = line.gallery?.length ? line.gallery : [...PANEL_GALLERY_IMAGES];
+  return [...new Set([line.image, ...extra])];
+}
 
 function v(lineId: string, label: string, price: number): StoreVariant {
   const slug = label

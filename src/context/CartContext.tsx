@@ -15,6 +15,8 @@ export type CartItem = {
   price: number;
   qty: number;
   image?: string;
+  /** Panel gallery shots for cart / checkout */
+  images?: string[];
 };
 
 type CartContextValue = {
@@ -45,12 +47,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
               name: item.name,
               price: item.price,
               image: item.image,
+              images: item.images,
               qty: q,
             },
           ];
         }
         const next = [...prev];
-        next[i] = { ...next[i], qty: next[i].qty + q };
+        next[i] = {
+          ...next[i],
+          qty: next[i].qty + q,
+          image: item.image ?? next[i].image,
+          images: item.images ?? next[i].images,
+        };
         return next;
       });
     },
@@ -81,6 +89,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           name: item.name,
           price: item.price,
           image: item.image,
+          images: item.images,
           qty: item.qty ?? 1,
         },
       ]);
