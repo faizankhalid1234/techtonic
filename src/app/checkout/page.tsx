@@ -399,18 +399,18 @@ export default function CheckoutPage() {
                 return (
                   <li
                     key={item.productId}
-                    className="flex gap-3 rounded-sm border border-zinc-700/80 bg-white p-3 text-sm"
+                    className="flex gap-3 rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-3 text-sm ring-1 ring-white/[0.04]"
                   >
                     <CartItemGallery images={images} alt={item.name} />
                     <div className="min-w-0 flex-1">
-                      <p className="line-clamp-2 font-medium text-zinc-800">
+                      <p className="line-clamp-2 font-medium text-zinc-100">
                         {item.name}
                       </p>
-                      <p className="mt-1 text-orange-500">
+                      <p className="mt-1 text-amber-300">
                         Rs. {formatPkr(item.price)}{" "}
                         <span className="text-zinc-500">× {item.qty}</span>
                       </p>
-                      <p className="mt-1 text-right font-semibold tabular-nums text-zinc-900">
+                      <p className="mt-1 text-right font-semibold tabular-nums text-zinc-100">
                         Rs. {formatPkr(item.price * item.qty)}
                       </p>
                     </div>

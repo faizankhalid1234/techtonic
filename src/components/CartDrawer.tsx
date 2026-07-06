@@ -1,11 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo } from "react";
-import { CartItemGallery } from "@/components/CartItemGallery";
 import { copy } from "@/lib/copy";
 import type { CartItem } from "@/context/CartContext";
-import { imageForVariant } from "@/lib/storeCatalog";
+import {
+  displayNameForVariant,
+  findVariantById,
+  galleryImagesForLine,
+  groupCartItemsBySeriesLine,
+  imageForVariant,
+  type CartSeriesPanel,
+} from "@/lib/storeCatalog";
 
 function formatPkr(n: number) {
   return n.toLocaleString("en-PK");
@@ -18,7 +25,14 @@ type CartDrawerProps = {
   itemCount: number;
   setQty: (productId: string, qty: number) => void;
   removeItem: (productId: string) => void;
+  addItem: (item: Omit<CartItem, "qty"> & { qty?: number }) => void;
 };
+
+function itemImages(item: CartItem): string[] {
+  if (item.images?.length) return item.images;
+  const img = item.image ?? imageForVariant(item.productId);
+  return img ? [img] : ["/featured-picks-v3.png"];
+}
 
 export function CartDrawer({
   open,
@@ -27,9 +41,15 @@ export function CartDrawer({
   itemCount,
   setQty,
   removeItem,
+  addItem,
 }: CartDrawerProps) {
   const subtotal = useMemo(
     () => items.reduce((sum, item) => sum + item.price * item.qty, 0),
+    [items],
+  );
+
+  const { sections, orphans } = useMemo(
+    () => groupCartItemsBySeriesLine(items),
     [items],
   );
 
@@ -58,64 +78,100 @@ export function CartDrawer({
         role="dialog"
         aria-modal="true"
         aria-label="Shopping cart"
-        className={`cart-drawer fixed bottom-0 right-0 top-0 z-[60] flex w-full max-w-[min(100%,28rem)] flex-col bg-zinc-100 shadow-[-8px_0_32px_rgba(0,0,0,0.15)] transition-transform duration-400 ease-out sm:max-w-md ${
+        className={`cart-drawer fixed bottom-0 right-0 top-0 z-[60] flex w-full max-w-[min(100%,30rem)] flex-col bg-gradient-to-b from-zinc-950 via-zinc-950 to-zinc-900 shadow-[-20px_0_60px_rgba(0,0,0,0.5)] ring-1 ring-amber-500/10 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:max-w-md ${
           open ? "translate-x-0" : "translate-x-full pointer-events-none"
         }`}
       >
-        <header className="flex items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 py-4 sm:px-5">
-          <div>
-            <h2 className="text-lg font-semibold text-zinc-900">
-              Shopping cart
-              <span className="ml-2 text-sm font-normal text-zinc-500">
-                ({itemCount} {itemCount === 1 ? "item" : "items"})
-              </span>
-            </h2>
-            <p className="mt-0.5 text-xs text-zinc-500">{copy.cart.codNote}</p>
+        <header className="relative shrink-0 border-b border-amber-500/15 px-5 py-5">
+          <div
+            className="pointer-events-none absolute -right-10 top-0 h-36 w-36 rounded-full bg-amber-500/10 blur-3xl"
+            aria-hidden
+          />
+          <div className="relative flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-400/90">
+                Tech Tonic
+              </p>
+              <h2 className="mt-1 flex items-center gap-2.5 text-xl font-bold text-white">
+                Your bag
+                {itemCount > 0 ? (
+                  <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-gradient-to-br from-amber-400/30 to-amber-600/20 px-2 text-sm font-bold text-amber-100 ring-1 ring-amber-400/35">
+                    {itemCount}
+                  </span>
+                ) : null}
+              </h2>
+              <p className="mt-1.5 text-xs leading-relaxed text-zinc-500">
+                Same series models · pay only for items in your bag
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl border border-zinc-700/80 bg-zinc-900/90 p-2.5 text-zinc-400 transition hover:border-zinc-500 hover:text-white"
+              aria-label="Close cart"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-sm p-2 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-800"
-            aria-label="Close cart"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
         </header>
 
-        <div className="mobile-scroll min-h-0 flex-1 overflow-y-auto bg-zinc-100 px-3 py-3 sm:px-4">
+        <div className="mobile-scroll min-h-0 flex-1 overflow-y-auto px-4 py-4">
           {items.length === 0 ? (
             <EmptyCart onClose={onClose} />
           ) : (
-            <ul className="space-y-3">
-              {items.map((item) => (
-                <CartLineItem
+            <div className="space-y-4">
+              {sections.map((section) => (
+                <SeriesSection
+                  key={section.line.id}
+                  title={section.title}
+                  brandLabel={section.brandLabel}
+                  models={section.models}
+                  setQty={setQty}
+                  removeItem={removeItem}
+                  addItem={addItem}
+                />
+              ))}
+              {orphans.map((item) => (
+                <OrphanLine
                   key={item.productId}
                   item={item}
                   setQty={setQty}
                   removeItem={removeItem}
                 />
               ))}
-            </ul>
+            </div>
           )}
         </div>
 
-        <footer className="border-t border-zinc-200 bg-white px-4 py-4 sm:px-5">
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-zinc-600">{copy.cart.subtotal}</span>
-            <span className="text-xl font-bold tabular-nums text-orange-500">
-              Rs. {formatPkr(subtotal)}
-            </span>
+        <footer className="shrink-0 border-t border-amber-500/15 bg-zinc-950/95 px-5 py-5 backdrop-blur-md">
+          <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/60 p-4">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  {copy.cart.subtotal}
+                </p>
+                <p className="mt-0.5 text-[11px] text-zinc-600">
+                  {copy.cart.items(itemCount)}
+                </p>
+              </div>
+              <p className="text-2xl font-bold tabular-nums tracking-tight text-amber-300">
+                Rs. {formatPkr(subtotal)}
+              </p>
+            </div>
           </div>
           <Link
             href="/checkout"
             onClick={onClose}
-            className={`mt-3 flex w-full items-center justify-center rounded-sm bg-orange-500 py-3.5 text-sm font-bold uppercase tracking-wide text-white shadow-sm transition hover:bg-orange-600 active:scale-[0.99] ${
+            className={`mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 py-3.5 text-sm font-bold text-zinc-950 shadow-lg shadow-amber-500/30 transition hover:shadow-amber-400/40 active:scale-[0.99] ${
               items.length === 0 ? "pointer-events-none opacity-40" : ""
             }`}
           >
             {copy.cart.checkout}
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
           </Link>
         </footer>
       </aside>
@@ -132,7 +188,7 @@ function DrawerBackdrop({
 }) {
   return (
     <div
-      className={`fixed inset-0 z-[55] bg-black/40 transition-opacity duration-300 ${
+      className={`fixed inset-0 z-[55] bg-zinc-950/80 transition-opacity duration-400 md:backdrop-blur-sm ${
         open ? "opacity-100" : "pointer-events-none opacity-0"
       }`}
       onClick={onClose}
@@ -143,13 +199,20 @@ function DrawerBackdrop({
 
 function EmptyCart({ onClose }: { onClose: () => void }) {
   return (
-    <div className="rounded-sm border border-dashed border-zinc-300 bg-white px-6 py-12 text-center">
-      <p className="text-sm font-medium text-zinc-700">{copy.cart.empty}</p>
-      <p className="mt-1 text-xs text-zinc-500">{copy.cart.emptyHint}</p>
+    <div className="flex min-h-[16rem] flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-700/50 bg-zinc-900/30 px-6 py-14 text-center">
+      <span className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400/25 to-fuchsia-500/10 ring-1 ring-amber-400/25">
+        <svg className="h-8 w-8 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+        </svg>
+      </span>
+      <p className="mt-5 text-base font-semibold text-zinc-200">{copy.cart.empty}</p>
+      <p className="mt-1.5 max-w-[14rem] text-xs leading-relaxed text-zinc-500">
+        {copy.cart.emptyHint}
+      </p>
       <Link
         href="/store"
         onClick={onClose}
-        className="mt-5 inline-block rounded-sm bg-orange-500 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600"
+        className="mt-6 rounded-full bg-gradient-to-r from-amber-400 to-amber-300 px-6 py-2.5 text-sm font-bold text-zinc-950 shadow-md shadow-amber-500/25 transition hover:brightness-105"
       >
         {copy.cart.browse}
       </Link>
@@ -157,13 +220,156 @@ function EmptyCart({ onClose }: { onClose: () => void }) {
   );
 }
 
-function cartImagesForItem(item: CartItem): string[] {
-  if (item.images?.length) return item.images;
-  const found = imageForVariant(item.productId);
-  return found ? [found] : ["/featured-picks-v3.png"];
+function SeriesSection({
+  title,
+  brandLabel,
+  models,
+  setQty,
+  removeItem,
+  addItem,
+}: {
+  title: string;
+  brandLabel: string;
+  models: CartSeriesPanel[];
+  setQty: (productId: string, qty: number) => void;
+  removeItem: (productId: string) => void;
+  addItem: (item: Omit<CartItem, "qty"> & { qty?: number }) => void;
+}) {
+  const inCartCount = models.filter((m) => m.inCart).length;
+
+  return (
+    <section className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/40 ring-1 ring-white/[0.04]">
+      <header className="border-b border-amber-500/15 bg-gradient-to-r from-amber-500/10 via-zinc-900/90 to-transparent px-4 py-3.5">
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-amber-400/80">
+          {brandLabel}
+        </p>
+        <h3 className="mt-0.5 text-sm font-bold leading-snug text-white">{title}</h3>
+        <p className="mt-1 text-[11px] text-zinc-500">
+          {models.length} models · {inCartCount} in your bag
+        </p>
+      </header>
+      <ul className="max-h-[min(50vh,22rem)] space-y-2 overflow-y-auto p-3">
+        {models.map((model) => (
+          <ModelRow
+            key={model.variant.id}
+            model={model}
+            setQty={setQty}
+            removeItem={removeItem}
+            addItem={addItem}
+          />
+        ))}
+      </ul>
+    </section>
+  );
 }
 
-function CartLineItem({
+function ModelRow({
+  model,
+  setQty,
+  removeItem,
+  addItem,
+}: {
+  model: CartSeriesPanel;
+  setQty: (productId: string, qty: number) => void;
+  removeItem: (productId: string) => void;
+  addItem: (item: Omit<CartItem, "qty"> & { qty?: number }) => void;
+}) {
+  const { line, variant, inCart } = model;
+  const gallery = galleryImagesForLine(line);
+  const thumb = gallery[0] ?? line.image;
+  const name = displayNameForVariant(line, variant);
+
+  function handleAdd() {
+    addItem({
+      productId: variant.id,
+      name,
+      price: variant.price,
+      image: thumb,
+      images: gallery,
+      qty: 1,
+    });
+  }
+
+  if (inCart) {
+    return (
+      <li className="overflow-hidden rounded-xl border border-amber-500/35 bg-gradient-to-r from-amber-500/10 to-zinc-950/80 ring-1 ring-amber-500/15">
+        <div className="flex gap-3 p-3">
+          <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-zinc-700/60 bg-zinc-800/80">
+            <Image src={thumb} alt={name} fill className="object-contain p-1" sizes="56px" unoptimized />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-zinc-100">{variant.label}</p>
+            <span className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-bold uppercase text-emerald-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              In bag
+            </span>
+            <p className="mt-1 text-sm font-bold text-amber-300">Rs. {formatPkr(variant.price)}</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-between border-t border-zinc-800/80 bg-zinc-950/50 px-3 py-2.5">
+          <div className="inline-flex items-center rounded-lg border border-zinc-700 bg-zinc-900 p-0.5">
+            <button
+              type="button"
+              className="flex h-8 w-8 items-center justify-center rounded-md text-zinc-300 hover:bg-zinc-800"
+              onClick={() =>
+                inCart.qty <= 1
+                  ? removeItem(variant.id)
+                  : setQty(variant.id, inCart.qty - 1)
+              }
+              aria-label="Decrease"
+            >
+              −
+            </button>
+            <span className="min-w-[2rem] text-center text-sm font-bold tabular-nums text-amber-200">
+              {inCart.qty}
+            </span>
+            <button
+              type="button"
+              className="flex h-8 w-8 items-center justify-center rounded-md text-zinc-300 hover:bg-zinc-800"
+              onClick={() => setQty(variant.id, inCart.qty + 1)}
+              aria-label="Increase"
+            >
+              +
+            </button>
+          </div>
+          <div className="text-right">
+            <p className="text-sm font-bold tabular-nums text-white">
+              Rs. {formatPkr(inCart.price * inCart.qty)}
+            </p>
+            <button
+              type="button"
+              onClick={() => removeItem(variant.id)}
+              className="text-[11px] text-rose-400 hover:underline"
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      </li>
+    );
+  }
+
+  return (
+    <li className="flex items-center gap-3 rounded-xl border border-zinc-800/70 bg-zinc-950/50 px-3 py-2.5 transition hover:border-zinc-700">
+      <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-zinc-700 bg-zinc-800/80">
+        <Image src={thumb} alt={name} fill className="object-contain p-1" sizes="44px" unoptimized />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium text-zinc-300">{variant.label}</p>
+        <p className="text-xs font-semibold text-amber-400/90">Rs. {formatPkr(variant.price)}</p>
+      </div>
+      <button
+        type="button"
+        onClick={handleAdd}
+        className="shrink-0 rounded-lg bg-amber-500/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-amber-200 ring-1 ring-amber-500/30 transition hover:bg-amber-500 hover:text-zinc-950"
+      >
+        Add
+      </button>
+    </li>
+  );
+}
+
+function OrphanLine({
   item,
   setQty,
   removeItem,
@@ -172,67 +378,24 @@ function CartLineItem({
   setQty: (productId: string, qty: number) => void;
   removeItem: (productId: string) => void;
 }) {
-  const lineTotal = item.price * item.qty;
-  const images = cartImagesForItem(item);
-
+  const images = itemImages(item);
   return (
-    <li className="cart-item-enter overflow-hidden rounded-sm border border-zinc-200 bg-white shadow-sm">
-      <div className="flex gap-3 p-3">
-        <CartItemGallery images={images} alt={item.name} />
+    <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/50 p-4">
+      <div className="flex gap-3">
+        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-zinc-700 bg-zinc-800/80">
+          <Image src={images[0]} alt={item.name} fill className="object-contain p-1" sizes="56px" unoptimized />
+        </div>
         <div className="min-w-0 flex-1">
-          <p className="line-clamp-2 text-sm leading-snug text-zinc-800">
-            {item.name}
-          </p>
-          <p className="mt-1 text-lg font-medium text-orange-500">
-            Rs. {formatPkr(item.price)}
-          </p>
-          <p className="text-xs text-zinc-400">Unit price · PKR</p>
+          <p className="text-sm font-medium text-zinc-200">{item.name}</p>
+          <p className="mt-1 font-bold text-amber-300">Rs. {formatPkr(item.price * item.qty)}</p>
+          <div className="mt-2 flex gap-2">
+            <button type="button" onClick={() => setQty(item.productId, Math.max(1, item.qty - 1))} className="h-7 w-7 rounded border border-zinc-700 text-zinc-300">−</button>
+            <span className="text-sm font-bold text-amber-200">{item.qty}</span>
+            <button type="button" onClick={() => setQty(item.productId, item.qty + 1)} className="h-7 w-7 rounded border border-zinc-700 text-zinc-300">+</button>
+            <button type="button" onClick={() => removeItem(item.productId)} className="ml-auto text-xs text-rose-400">Remove</button>
+          </div>
         </div>
       </div>
-      <div className="flex items-center justify-between border-t border-zinc-100 bg-zinc-50/80 px-3 py-2.5">
-        <div className="inline-flex items-center rounded-sm border border-zinc-300 bg-white text-zinc-800">
-          <button
-            type="button"
-            className="flex h-8 w-8 items-center justify-center text-base transition hover:bg-zinc-50"
-            onClick={() =>
-              item.qty <= 1
-                ? removeItem(item.productId)
-                : setQty(item.productId, item.qty - 1)
-            }
-            aria-label="Decrease quantity"
-          >
-            −
-          </button>
-          <span className="min-w-[2rem] border-x border-zinc-300 text-center text-sm font-semibold tabular-nums">
-            {item.qty}
-          </span>
-          <button
-            type="button"
-            className="flex h-8 w-8 items-center justify-center text-base transition hover:bg-zinc-50"
-            onClick={() => setQty(item.productId, item.qty + 1)}
-            aria-label="Increase quantity"
-          >
-            +
-          </button>
-        </div>
-        <div className="text-right">
-          <p className="text-[10px] uppercase tracking-wide text-zinc-400">
-            Line total
-          </p>
-          <p className="text-base font-bold tabular-nums text-zinc-900">
-            Rs. {formatPkr(lineTotal)}
-          </p>
-        </div>
-      </div>
-      <div className="border-t border-zinc-100 px-3 py-2">
-        <button
-          type="button"
-          className="text-xs font-medium text-rose-500 hover:text-rose-600 hover:underline"
-          onClick={() => removeItem(item.productId)}
-        >
-          Remove
-        </button>
-      </div>
-    </li>
+    </div>
   );
 }

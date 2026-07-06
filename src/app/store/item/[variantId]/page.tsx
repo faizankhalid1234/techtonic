@@ -1,37 +1,14 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import {
-  allVariantPathParams,
-  findVariantById,
-} from "@/lib/storeCatalog";
-import { ProductDetailClient } from "./ProductDetailClient";
+import { redirect } from "next/navigation";
+import { findVariantById } from "@/lib/storeCatalog";
 
 type PageProps = {
   params: Promise<{ variantId: string }>;
 };
 
-export function generateStaticParams() {
-  return allVariantPathParams();
-}
-
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
+/** Product detail page removed — send shoppers back to the brand model list. */
+export default async function StoreProductRedirect({ params }: PageProps) {
   const { variantId: raw } = await params;
   const hit = findVariantById(decodeURIComponent(raw));
-  if (!hit) return { title: "Product | Tech Tonic" };
-  const title = `${hit.variant.label} — ${hit.line.title} | Tech Tonic`;
-  return {
-    title,
-    description: hit.line.detailDescription ?? hit.line.description,
-  };
-}
-
-export default async function StoreProductPage({ params }: PageProps) {
-  const { variantId: raw } = await params;
-  const id = decodeURIComponent(raw);
-  const hit = findVariantById(id);
-  if (!hit) notFound();
-
-  return <ProductDetailClient line={hit.line} variant={hit.variant} />;
+  if (!hit) redirect("/store");
+  redirect(`/store/${hit.line.category}`);
 }

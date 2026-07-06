@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { CartDrawer } from "@/components/CartDrawer";
 
 export type CartItem = {
   productId: string;
@@ -21,11 +22,14 @@ export type CartItem = {
 
 type CartContextValue = {
   items: CartItem[];
+  itemCount: number;
+  drawerOpen: boolean;
+  openDrawer: () => void;
+  closeDrawer: () => void;
   addItem: (item: Omit<CartItem, "qty"> & { qty?: number }) => void;
   setQty: (productId: string, qty: number) => void;
   removeItem: (productId: string) => void;
   clear: () => void;
-  /** Buy now: cart contains only this item. */
   replaceWithItem: (item: Omit<CartItem, "qty"> & { qty?: number }) => void;
 };
 
@@ -33,6 +37,15 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const itemCount = useMemo(
+    () => items.reduce((sum, item) => sum + item.qty, 0),
+    [items],
+  );
+
+  const openDrawer = useCallback(() => setDrawerOpen(true), []);
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
   const addItem = useCallback(
     (item: Omit<CartItem, "qty"> & { qty?: number }) => {
@@ -61,6 +74,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         };
         return next;
       });
+      setDrawerOpen(true);
     },
     [],
   );
@@ -98,12 +112,45 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ items, addItem, setQty, removeItem, clear, replaceWithItem }),
-    [items, addItem, setQty, removeItem, clear, replaceWithItem],
+    () => ({
+      items,
+      itemCount,
+      drawerOpen,
+      openDrawer,
+      closeDrawer,
+      addItem,
+      setQty,
+      removeItem,
+      clear,
+      replaceWithItem,
+    }),
+    [
+      items,
+      itemCount,
+      drawerOpen,
+      openDrawer,
+      closeDrawer,
+      addItem,
+      setQty,
+      removeItem,
+      clear,
+      replaceWithItem,
+    ],
   );
 
   return (
-    <CartContext.Provider value={value}>{children}</CartContext.Provider>
+    <CartContext.Provider value={value}>
+      {children}
+      <CartDrawer
+        open={drawerOpen}
+        onClose={closeDrawer}
+        items={items}
+        itemCount={itemCount}
+        setQty={setQty}
+        removeItem={removeItem}
+        addItem={addItem}
+      />
+    </CartContext.Provider>
   );
 }
 

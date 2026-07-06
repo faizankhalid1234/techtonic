@@ -15,7 +15,7 @@ export function CartItemGallery({ images, alt, activeIndex = 0 }: Props) {
 
   return (
     <div className="flex shrink-0 flex-col gap-1.5">
-      <div className="relative h-[4.5rem] w-[4.5rem] overflow-hidden rounded-sm border border-zinc-200 bg-white">
+      <div className="relative h-[4.5rem] w-[4.5rem] overflow-hidden rounded-lg border border-zinc-700/60 bg-zinc-800/80">
         <Image
           src={main}
           alt={alt}
@@ -30,8 +30,8 @@ export function CartItemGallery({ images, alt, activeIndex = 0 }: Props) {
           {slides.slice(0, 4).map((src, i) => (
             <div
               key={`${src}-${i}`}
-              className={`relative h-7 w-7 overflow-hidden rounded-sm border bg-white ${
-                i === activeIndex ? "border-orange-500" : "border-zinc-200"
+              className={`relative h-7 w-7 overflow-hidden rounded-md border bg-zinc-800/80 ${
+                i === activeIndex ? "border-amber-500" : "border-zinc-700"
               }`}
             >
               <Image

@@ -365,6 +365,198 @@ export function findVariantById(
   return null;
 }
 
+export function displayNameForVariant(
+  line: StoreProductLine,
+  variant: StoreVariant,
+): string {
+  const cat = STORE_CATEGORIES.find((c) => c.id === line.category);
+  return `${cat?.label ?? "Display"} — ${variant.label}`;
+}
+
+/** Short series heading for cart groups (e.g. iPhone 11 family). */
+export function seriesLabelForLine(line: StoreProductLine): string {
+  const cat = STORE_CATEGORIES.find((c) => c.id === line.category);
+  const brand = cat?.label ?? "Panel";
+  const fromTitle = line.title
+    .replace(/^Tech Tonic\s*(LCD\s*)?[—–-]\s*/i, "")
+    .trim();
+  return fromTitle || `${brand} series`;
+}
+
+export type CartBrandModel = {
+  line: StoreProductLine;
+  variant: StoreVariant;
+  inCart?: {
+    productId: string;
+    qty: number;
+    price: number;
+    name: string;
+    image?: string;
+    images?: string[];
+  };
+};
+
+export type CartBrandGroup = {
+  category: StoreCategory;
+  label: string;
+  /** All models for this brand — flat list, no series grouping */
+  models: CartBrandModel[];
+};
+
+export type CartSeriesPanel = {
+  line: StoreProductLine;
+  variant: StoreVariant;
+  inCart?: {
+    productId: string;
+    qty: number;
+    price: number;
+    name: string;
+    image?: string;
+    images?: string[];
+  };
+};
+
+export type CartSeriesSection = {
+  line: StoreProductLine;
+  title: string;
+  brandLabel: string;
+  models: CartSeriesPanel[];
+};
+
+/**
+ * For each product line with something in the cart, list every model in that
+ * line only (e.g. iPhone 11 add → 11 / 11 Pro / 11 Pro Max — not iPhone 12).
+ */
+export function groupCartItemsBySeriesLine(
+  items: {
+    productId: string;
+    name: string;
+    price: number;
+    qty: number;
+    image?: string;
+    images?: string[];
+  }[],
+): { sections: CartSeriesSection[]; orphans: typeof items } {
+  const lineOrder: string[] = [];
+  const lineMap = new Map<string, StoreProductLine>();
+  const inCartByVariant = new Map<string, (typeof items)[number]>();
+  const orphans: typeof items = [];
+
+  for (const item of items) {
+    const found = findVariantById(item.productId);
+    if (!found) {
+      orphans.push(item);
+      continue;
+    }
+    if (!lineMap.has(found.line.id)) {
+      lineMap.set(found.line.id, found.line);
+      lineOrder.push(found.line.id);
+    }
+    inCartByVariant.set(item.productId, item);
+  }
+
+  const sections: CartSeriesSection[] = lineOrder.map((lineId) => {
+    const line = lineMap.get(lineId)!;
+    const cat = STORE_CATEGORIES.find((c) => c.id === line.category);
+    return {
+      line,
+      title: seriesLabelForLine(line),
+      brandLabel: cat?.label ?? "Panel",
+      models: line.variants.map((variant) => ({
+        line,
+        variant,
+        inCart: inCartByVariant.get(variant.id),
+      })),
+    };
+  });
+
+  return { sections, orphans };
+}
+
+export type CartSeriesGroup = {
+  line: StoreProductLine;
+  inCart: Map<string, { productId: string; qty: number; price: number; name: string; image?: string; images?: string[] }>;
+};
+
+/**
+ * When any model is in the cart, show every model name for that brand
+ * in one flat list (e.g. iPhone 11, 11 Pro, XR, A11… — no series headers).
+ */
+export function groupCartItemsByBrand(
+  items: {
+    productId: string;
+    name: string;
+    price: number;
+    qty: number;
+    image?: string;
+    images?: string[];
+  }[],
+): { brands: CartBrandGroup[]; orphans: typeof items } {
+  const categoriesInCart = new Set<StoreCategory>();
+  const inCartByVariant = new Map<string, (typeof items)[number]>();
+  const orphans: typeof items = [];
+
+  for (const item of items) {
+    const found = findVariantById(item.productId);
+    if (!found) {
+      orphans.push(item);
+      continue;
+    }
+    categoriesInCart.add(found.line.category);
+    inCartByVariant.set(item.productId, item);
+  }
+
+  const brands: CartBrandGroup[] = [];
+
+  for (const cat of STORE_CATEGORIES) {
+    if (!categoriesInCart.has(cat.id)) continue;
+
+    const models: CartBrandModel[] = [];
+    for (const line of STORE_PRODUCT_LINES) {
+      if (line.category !== cat.id) continue;
+      for (const variant of line.variants) {
+        models.push({
+          line,
+          variant,
+          inCart: inCartByVariant.get(variant.id),
+        });
+      }
+    }
+
+    models.sort((a, b) =>
+      a.variant.label.localeCompare(b.variant.label, undefined, {
+        sensitivity: "base",
+        numeric: true,
+      }),
+    );
+
+    brands.push({ category: cat.id, label: cat.label, models });
+  }
+
+  return { brands, orphans };
+}
+
+/** @deprecated Use groupCartItemsByBrand */
+export function groupCartItemsBySeries(
+  items: Parameters<typeof groupCartItemsByBrand>[0],
+): { groups: CartSeriesGroup[]; orphans: typeof items } {
+  const { brands, orphans } = groupCartItemsByBrand(items);
+  const groups: CartSeriesGroup[] = [];
+  for (const brand of brands) {
+    const byLine = new Map<string, CartSeriesGroup>();
+    for (const m of brand.models) {
+      let g = byLine.get(m.line.id);
+      if (!g) {
+        g = { line: m.line, inCart: new Map() };
+        byLine.set(m.line.id, g);
+        groups.push(g);
+      }
+      if (m.inCart) g.inCart.set(m.variant.id, m.inCart);
+    }
+  }
+  return { groups, orphans };
+}
+
 /** For `generateStaticParams` — path segment safe ids */
 export function allVariantPathParams(): { variantId: string }[] {
   return STORE_PRODUCT_LINES.flatMap((line) =>

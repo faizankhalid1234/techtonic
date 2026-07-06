@@ -39,10 +39,9 @@ function NavPill({
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const { items } = useCart();
+  const { itemCount, openDrawer } = useCart();
   const [user, setUser] = useState<User>(null);
   const [scrolled, setScrolled] = useState(false);
-  const count = items.reduce((s, i) => s + i.qty, 0);
 
   const whatsappUrl = useMemo(() => {
     const raw = process.env.NEXT_PUBLIC_WHATSAPP_PHONE?.replace(/\D/g, "");
@@ -204,15 +203,15 @@ export function Header() {
             </Link>
           )}
 
-          <Link
-            href="/checkout"
+          <button
+            type="button"
+            onClick={openDrawer}
             className={`relative inline-flex h-10 w-10 items-center justify-center rounded-full border text-zinc-200 transition hover:bg-zinc-900 sm:h-11 sm:w-11 ${
               checkoutActive
                 ? "border-amber-400/70 bg-amber-500/10 text-amber-200 shadow-[0_0_16px_rgba(251,191,36,0.2)]"
                 : "border-zinc-600 hover:border-rose-500/60"
             }`}
-            aria-label="Cart"
-            aria-current={checkoutActive ? "page" : undefined}
+            aria-label="Open shopping cart"
           >
             <svg
               className="h-[1.15rem] w-[1.15rem] sm:h-5 sm:w-5"
@@ -227,10 +226,12 @@ export function Header() {
                 d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
               />
             </svg>
-            <span className="absolute -right-0.5 -top-0.5 flex h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full bg-rose-500 px-0.5 text-[10px] font-semibold text-white sm:h-5 sm:min-w-[1.25rem] sm:text-[11px]">
-              {count}
-            </span>
-          </Link>
+            {itemCount > 0 ? (
+              <span className="absolute -right-0.5 -top-0.5 flex h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full bg-rose-500 px-0.5 text-[10px] font-semibold text-white sm:h-5 sm:min-w-[1.25rem] sm:text-[11px]">
+                {itemCount}
+              </span>
+            ) : null}
+          </button>
         </div>
       </div>
     </header>
