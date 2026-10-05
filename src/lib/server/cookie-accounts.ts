@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { SignJWT, jwtVerify } from "jose";
+import { jwtVerifySecrets } from "./jwt-secret";
 import { hashPassword, verifyPassword } from "./password";
 
 export const ACCOUNTS_COOKIE = "techtonic_accounts";
@@ -17,16 +18,19 @@ function key(secret: string) {
 
 export async function readAccounts(
   token: string | undefined,
-  secret: string,
+  _secret?: string,
 ): Promise<StoredUser[]> {
   if (!token) return [];
-  try {
-    const { payload } = await jwtVerify(token, key(secret));
-    const users = payload.users;
-    return Array.isArray(users) ? (users as StoredUser[]) : [];
-  } catch {
-    return [];
+  for (const secret of jwtVerifySecrets()) {
+    try {
+      const { payload } = await jwtVerify(token, key(secret));
+      const users = payload.users;
+      return Array.isArray(users) ? (users as StoredUser[]) : [];
+    } catch {
+      /* try next */
+    }
   }
+  return [];
 }
 
 export async function writeAccountsToken(users: StoredUser[], secret: string) {

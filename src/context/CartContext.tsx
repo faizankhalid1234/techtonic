@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -34,10 +35,54 @@ type CartContextValue = {
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
+const CART_KEY = "techtonic_cart_v1";
+
+function readStoredCart(): CartItem[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(CART_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (x): x is CartItem =>
+        Boolean(
+          x &&
+            typeof x === "object" &&
+            typeof (x as CartItem).productId === "string" &&
+            typeof (x as CartItem).name === "string" &&
+            typeof (x as CartItem).price === "number" &&
+            typeof (x as CartItem).qty === "number",
+        ),
+    );
+  } catch {
+    return [];
+  }
+}
+
+function writeStoredCart(items: CartItem[]) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(CART_KEY, JSON.stringify(items));
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    setItems(readStoredCart());
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    writeStoredCart(items);
+  }, [items, hydrated]);
 
   const itemCount = useMemo(
     () => items.reduce((sum, item) => sum + item.qty, 0),
@@ -97,7 +142,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const replaceWithItem = useCallback(
     (item: Omit<CartItem, "qty"> & { qty?: number }) => {
-      setItems([
+      const next: CartItem[] = [
         {
           productId: item.productId,
           name: item.name,
@@ -106,7 +151,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
           images: item.images,
           qty: item.qty ?? 1,
         },
-      ]);
+      ];
+      writeStoredCart(next);
+      setItems(next);
     },
     [],
   );

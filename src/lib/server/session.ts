@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import { SESSION_COOKIE } from "./auth-constants";
+import { jwtVerifySecrets } from "./jwt-secret";
 
 function secretKey(secret: string) {
   return new TextEncoder().encode(secret);
@@ -33,9 +34,20 @@ export async function signSessionToken(
     .sign(secretKey(secret));
 }
 
-export async function verifySessionToken(token: string, secret: string) {
-  const { payload } = await jwtVerify(token, secretKey(secret));
-  return payload;
+export async function verifySessionToken(token: string, _secret?: string) {
+  const secrets = jwtVerifySecrets();
+  if (_secret?.trim()) secrets.unshift(_secret.trim());
+  const unique = [...new Set(secrets)];
+  let lastErr: unknown;
+  for (const secret of unique) {
+    try {
+      const { payload } = await jwtVerify(token, secretKey(secret));
+      return payload;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr ?? new Error("Invalid session");
 }
 
 export { SESSION_COOKIE };

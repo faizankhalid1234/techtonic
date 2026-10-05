@@ -51,6 +51,7 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [success, setSuccess] = useState<SuccessInfo | null>(null);
+  const [authReady, setAuthReady] = useState(false);
 
   const subtotal = useMemo(
     () => items.reduce((s, i) => s + i.price * i.qty, 0),
@@ -62,10 +63,36 @@ export default function CheckoutPage() {
   const itemCount = items.reduce((s, i) => s + i.qty, 0);
 
   useEffect(() => {
-    if (items.length === 0 && !success) {
+    let cancelled = false;
+    async function guard() {
+      try {
+        const r = await fetch("/api/auth/me", {
+          credentials: "include",
+          cache: "no-store",
+        });
+        const d = (await r.json()) as { user?: { email?: string } | null };
+        if (cancelled) return;
+        if (!d?.user?.email) {
+          router.replace("/login?from=checkout");
+          return;
+        }
+        setAuthReady(true);
+      } catch {
+        if (!cancelled) router.replace("/login?from=checkout");
+      }
+    }
+    void guard();
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
+  useEffect(() => {
+    if (!authReady || success) return;
+    if (items.length === 0) {
       router.replace("/store");
     }
-  }, [items.length, router, success]);
+  }, [authReady, items.length, router, success]);
 
   async function placeOrder(e: React.FormEvent) {
     e.preventDefault();
@@ -153,6 +180,14 @@ export default function CheckoutPage() {
     if (deliveryType === "pickup") return copy.checkout.placeOrderPickup;
     if (paymentMethod === "card") return copy.checkout.placeOrderCard;
     return copy.checkout.placeOrderCod;
+  }
+
+  if (!authReady && !success) {
+    return (
+      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center px-4 py-20">
+        <p className="text-sm text-zinc-400">Checking your session…</p>
+      </main>
+    );
   }
 
   if (success) {
