@@ -52,17 +52,25 @@ export function Header() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/auth/me", { credentials: "include" })
-      .then(async (r) => {
-        if (!r.ok) return { user: null };
-        return r.json() as Promise<{ user?: User }>;
-      })
-      .then((d) => {
+
+    async function loadUser() {
+      try {
+        const r = await fetch("/api/auth/me", {
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (!r.ok) {
+          if (!cancelled) setUser(null);
+          return;
+        }
+        const d = (await r.json()) as { user?: User };
         if (!cancelled) setUser(d?.user ?? null);
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) setUser(null);
-      });
+      }
+    }
+
+    void loadUser();
     return () => {
       cancelled = true;
     };
@@ -182,25 +190,33 @@ export function Header() {
           </span>
 
           {user ? (
-            <span className="hidden max-w-[120px] truncate text-sm text-zinc-300 xl:inline">
-              {user.name}
-            </span>
-          ) : null}
-          {user ? (
-            <button
-              type="button"
-              onClick={() => void logout()}
-              className="hidden rounded-lg border border-zinc-700 px-2.5 py-2 text-xs font-medium text-zinc-300 transition hover:border-zinc-500 hover:bg-zinc-900 sm:inline sm:px-3 sm:text-sm"
-            >
-              Sign out
-            </button>
+            <>
+              <span className="hidden max-w-[100px] truncate text-xs text-zinc-300 sm:inline sm:max-w-[120px] sm:text-sm">
+                {user.name}
+              </span>
+              <button
+                type="button"
+                onClick={() => void logout()}
+                className="rounded-lg border border-zinc-700 px-2.5 py-2 text-xs font-medium text-zinc-300 transition hover:border-zinc-500 hover:bg-zinc-900 sm:px-3 sm:text-sm"
+              >
+                Sign out
+              </button>
+            </>
           ) : (
-            <Link
-              href="/login"
-              className="hidden rounded-lg border border-zinc-700 px-2.5 py-2 text-xs font-medium text-zinc-300 transition hover:border-zinc-500 hover:bg-zinc-900 sm:inline sm:px-3 sm:text-sm"
-            >
-              Sign in
-            </Link>
+            <>
+              <Link
+                href="/login"
+                className="rounded-lg border border-zinc-700 px-2.5 py-2 text-xs font-medium text-zinc-300 transition hover:border-zinc-500 hover:bg-zinc-900 sm:px-3 sm:text-sm"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/signup"
+                className="rounded-lg bg-amber-400 px-2.5 py-2 text-xs font-bold text-zinc-950 transition hover:bg-amber-300 sm:px-3 sm:text-sm"
+              >
+                Sign up
+              </Link>
+            </>
           )}
 
           <button

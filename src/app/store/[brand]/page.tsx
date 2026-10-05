@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import {
   STORE_CATEGORIES,
   getCategoryById,
-  getModelsForCategory,
+  getSeriesForCategory,
   type StoreCategory,
 } from "@/lib/storeCatalog";
 import { BrandModelsClient } from "./BrandModelsClient";
@@ -21,8 +21,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const category = getCategoryById(brand);
   if (!category) return { title: "Shop | Tech Tonic" };
   return {
-    title: `${category.label} displays | Tech Tonic`,
-    description: `Browse ${category.label} replacement display models at Tech Tonic.`,
+    title: `${category.label} series | Tech Tonic`,
+    description: `Browse ${category.label} display series and models at Tech Tonic.`,
   };
 }
 
@@ -31,7 +31,7 @@ export default async function BrandStorePage({ params }: PageProps) {
   const category = getCategoryById(brand);
   if (!category) notFound();
 
-  const models = getModelsForCategory(category.id as StoreCategory);
+  const series = getSeriesForCategory(category.id as StoreCategory);
 
-  return <BrandModelsClient category={category} models={models} />;
+  return <BrandModelsClient category={category} series={series} />;
 }

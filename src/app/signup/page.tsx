@@ -43,8 +43,8 @@ export default function SignupPage() {
         setError(authErrorMessage(res, data, "Could not create account."));
         return;
       }
-      router.push("/");
       router.refresh();
+      router.push("/");
     } catch {
       setError("Connection failed. Please try again later.");
     } finally {

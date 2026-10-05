@@ -20,6 +20,8 @@ export type StoreProductLine = {
   id: string;
   category: StoreCategory;
   title: string;
+  /** Short family name shown in shop (e.g. "iPhone 11", "Galaxy A10–A16"). */
+  seriesName: string;
   /** Short blurb on store cards (can list many models). */
   description: string;
   /**
@@ -71,52 +73,54 @@ export const STORE_CATEGORIES: {
 
 export const STORE_PRODUCT_LINES: StoreProductLine[] = [
   {
+    id: "iphone-7",
+    category: "iphone",
+    title: "Tech Tonic LCD — iPhone 7",
+    seriesName: "iPhone 7",
+    description: "High-quality replacement with original display and touch performance.",
+    image: IMG,
+    variants: [v("iphone-7", "White", 3400), v("iphone-7", "Black", 3400)],
+  },
+  {
+    id: "iphone-7-plus",
+    category: "iphone",
+    title: "Tech Tonic LCD — iPhone 7 Plus",
+    seriesName: "iPhone 7 Plus",
+    description: "High-quality replacement with original display and touch performance.",
+    image: IMG,
+    variants: [
+      v("iphone-7-plus", "White", 3600),
+      v("iphone-7-plus", "Black", 3600),
+    ],
+  },
+  {
     id: "iphone-8",
     category: "iphone",
-    title: "Tech Tonic LCD — iPhone 8 (8G)",
+    title: "Tech Tonic LCD — iPhone 8",
+    seriesName: "iPhone 8",
     description:
       "Premium replacement unit with original display quality and touch sensitivity.",
     image: IMG,
     variants: [v("iphone-8", "White", 3500), v("iphone-8", "Black", 3500)],
   },
   {
-    id: "samsung-galaxy-lcd",
-    category: "samsung",
-    title: "Tech Tonic LCD — Samsung Galaxy (A / J series)",
+    id: "iphone-8-plus",
+    category: "iphone",
+    title: "Tech Tonic LCD — iPhone 8 Plus",
+    seriesName: "iPhone 8 Plus",
     description:
-      "High-quality replacement for A02s, A25, A06, A10, A10s, A32, A14, A23, A04, A04s, A13, A03, A30s, A01, A21s, A11, A12, A05, A05s, J4+, A16, A20, A20s, J6, J6 Plus, J5 Prime, J7 Prime and more.",
-    detailDescription:
-      "Tech Tonic premium LCD assembly for Samsung Galaxy A and J series. Built for stable touch, even brightness, and colours that stay true to the original profile. The variant you choose is the exact unit we match for fit and connector layout—no guessing. Ideal for everyday use after a cracked or failed screen. Each price on the store reflects that specific model; add to cart when you are ready and complete cash on delivery checkout for delivery.",
+      "Premium replacement with original display quality and touch sensitivity.",
     image: IMG,
     variants: [
-      v("samsung-galaxy-lcd", "A11", 3500),
-      v("samsung-galaxy-lcd", "A12", 3500),
-      v("samsung-galaxy-lcd", "A13", 3500),
-      v("samsung-galaxy-lcd", "A14", 3600),
-      v("samsung-galaxy-lcd", "A05", 3600),
-      v("samsung-galaxy-lcd", "A05s", 3600),
-      v("samsung-galaxy-lcd", "A06", 3600),
-      v("samsung-galaxy-lcd", "A02s", 3600),
-      v("samsung-galaxy-lcd", "A20s", 3600),
-      v("samsung-galaxy-lcd", "A10", 3300),
-      v("samsung-galaxy-lcd", "A10s", 3500),
-      v("samsung-galaxy-lcd", "A04", 3600),
-      v("samsung-galaxy-lcd", "A04s", 3600),
-      v("samsung-galaxy-lcd", "J5 Prime", 3000),
-      v("samsung-galaxy-lcd", "J7 Prime", 3000),
-      v("samsung-galaxy-lcd", "A21s", 3600),
-      v("samsung-galaxy-lcd", "J6", 2800),
-      v("samsung-galaxy-lcd", "J6 Plus", 2800),
-      v("samsung-galaxy-lcd", "J4 Plus", 2800),
-      v("samsung-galaxy-lcd", "A16", 4500),
-      v("samsung-galaxy-lcd", "A32", 4600),
-      v("samsung-galaxy-lcd", "A32 OLED", 8000),
+      v("iphone-8-plus", "White", 3600),
+      v("iphone-8-plus", "Black", 3600),
     ],
   },
   {
     id: "iphone-x-series",
     category: "iphone",
     title: "Tech Tonic — iPhone X / XR / XS / XS Max",
+    seriesName: "iPhone X · XR · XS",
     description:
       "Black panels. Original colors + HDR. Premium LCD / OLED replacement with bright touch digitizer combo.",
     image: IMG,
@@ -131,58 +135,10 @@ export const STORE_PRODUCT_LINES: StoreProductLine[] = [
     ],
   },
   {
-    id: "iphone-13-series",
-    category: "iphone",
-    title: "Tech Tonic — iPhone 13 Series",
-    description:
-      "Powerful performance, stunning design — LCD and OLED options for 13, 13 Pro, and 13 Pro Max.",
-    image: IMG,
-    variants: [
-      v("iphone-13-series", "LCD 13", 6400),
-      v("iphone-13-series", "OLED 13", 12000),
-      v("iphone-13-series", "LCD 13 Pro", 7600),
-      v("iphone-13-series", "OLED 13 Pro", 13500),
-      v("iphone-13-series", "LCD 13 Pro Max", 9000),
-      v("iphone-13-series", "OLED 13 Pro Max", 13800),
-    ],
-  },
-  {
-    id: "iphone-8-plus",
-    category: "iphone",
-    title: "Tech Tonic LCD — iPhone 8 Plus",
-    description:
-      "Premium replacement with original display quality and touch sensitivity.",
-    image: IMG,
-    variants: [
-      v("iphone-8-plus", "White", 3600),
-      v("iphone-8-plus", "Black", 3600),
-    ],
-  },
-  {
-    id: "iphone-7",
-    category: "iphone",
-    title: "Tech Tonic LCD — iPhone 7 (7G)",
-    description:
-      "High-quality replacement with original display and touch performance.",
-    image: IMG,
-    variants: [v("iphone-7", "White", 3400), v("iphone-7", "Black", 3400)],
-  },
-  {
-    id: "iphone-7-plus",
-    category: "iphone",
-    title: "Tech Tonic LCD — iPhone 7 Plus",
-    description:
-      "High-quality replacement with original display and touch performance.",
-    image: IMG,
-    variants: [
-      v("iphone-7-plus", "White", 3600),
-      v("iphone-7-plus", "Black", 3600),
-    ],
-  },
-  {
     id: "iphone-11-series",
     category: "iphone",
     title: "Tech Tonic LCD — iPhone 11 / 11 Pro / 11 Pro Max",
+    seriesName: "iPhone 11",
     description:
       "Black. Original colors and smooth touch. LCD and OLED options for Pro models.",
     image: IMG,
@@ -195,63 +151,10 @@ export const STORE_PRODUCT_LINES: StoreProductLine[] = [
     ],
   },
   {
-    id: "vivo-sunlong",
-    category: "vivo",
-    title: "Tech Tonic — Vivo display (Y / V / S series)",
-    description:
-      "Premium LCD replacement — high resolution, original quality, full touch support. Y27, Y85/V9, Y83, Y71, Y35, S1 Pro, Y03, Y12, Y17s, Y21, Y28, Y30, Y91, Y02, V20, Y04, Y81, Y19, Y19s, Y100, Y20, and more.",
-    detailDescription:
-      "Tech Tonic LCD replacement for Vivo Y, V, and S series handsets. You get a sharp panel, responsive touch layer, and consistent colour out of the box. Because Vivo model names are easy to mix up, always order the variant that matches your phone’s exact model number—the page title and selected chip show what you are buying. Suitable for shops and end users who want a dependable swap without compromising on clarity.",
-    image: IMG,
-    variants: [
-      v("vivo-sunlong", "Y04", 3600),
-      v("vivo-sunlong", "V9", 3400),
-      v("vivo-sunlong", "Y83", 3200),
-      v("vivo-sunlong", "Y91", 3500),
-      v("vivo-sunlong", "Y21", 3200),
-      v("vivo-sunlong", "Y33S", 3650),
-      v("vivo-sunlong", "Y36", 4300),
-      v("vivo-sunlong", "Y53", 4100),
-      v("vivo-sunlong", "Y27", 3800),
-      v("vivo-sunlong", "Y12", 3500),
-      v("vivo-sunlong", "Y19S", 3700),
-      v("vivo-sunlong", "Y28", 3700),
-      v("vivo-sunlong", "Y85", 3400),
-      v("vivo-sunlong", "Y30", 3400),
-      v("vivo-sunlong", "Y20", 3400),
-      v("vivo-sunlong", "Y17s", 3500),
-      v("vivo-sunlong", "Y02", 3500),
-      v("vivo-sunlong", "Y03", 3500),
-      v("vivo-sunlong", "Y19", 3400),
-      v("vivo-sunlong", "Y81", 3400),
-    ],
-  },
-  {
-    id: "oppo-display",
-    category: "oppo",
-    title: "Tech Tonic — OPPO display",
-    description:
-      "Best quality replacement screen — premium clarity, reliable performance.",
-    image: IMG,
-    variants: [
-      v("oppo-display", "A52", 3400),
-      v("oppo-display", "A92", 3400),
-      v("oppo-display", "F11", 3400),
-      v("oppo-display", "F11 Pro", 3700),
-      v("oppo-display", "A3S", 3400),
-      v("oppo-display", "A5S", 3300),
-      v("oppo-display", "A53S", 3400),
-      v("oppo-display", "A54", 3450),
-      v("oppo-display", "A16", 3400),
-      v("oppo-display", "F9", 3400),
-      v("oppo-display", "A5 Black", 3200),
-      v("oppo-display", "A5 White", 3200),
-    ],
-  },
-  {
     id: "iphone-12-series",
     category: "iphone",
     title: "Tech Tonic — iPhone 12 / 12 Pro / 12 Pro Max / 12 Mini",
+    seriesName: "iPhone 12",
     description:
       "LCD display replacement — original colors, full touch digitizer assembly. Black.",
     image: IMG,
@@ -265,9 +168,191 @@ export const STORE_PRODUCT_LINES: StoreProductLine[] = [
     ],
   },
   {
+    id: "iphone-13-series",
+    category: "iphone",
+    title: "Tech Tonic — iPhone 13 Series",
+    seriesName: "iPhone 13",
+    description:
+      "Powerful performance, stunning design — LCD and OLED options for 13, 13 Pro, and 13 Pro Max.",
+    image: IMG,
+    variants: [
+      v("iphone-13-series", "LCD 13", 6400),
+      v("iphone-13-series", "OLED 13", 12000),
+      v("iphone-13-series", "LCD 13 Pro", 7600),
+      v("iphone-13-series", "OLED 13 Pro", 13500),
+      v("iphone-13-series", "LCD 13 Pro Max", 9000),
+      v("iphone-13-series", "OLED 13 Pro Max", 13800),
+    ],
+  },
+  {
+    id: "samsung-a0x",
+    category: "samsung",
+    title: "Tech Tonic LCD — Samsung Galaxy A0x",
+    seriesName: "Galaxy A02–A06",
+    description: "Premium LCD for Galaxy A02s, A04, A04s, A05, A05s, A06.",
+    image: IMG,
+    variants: [
+      v("samsung-a0x", "A02s", 3600),
+      v("samsung-a0x", "A04", 3600),
+      v("samsung-a0x", "A04s", 3600),
+      v("samsung-a0x", "A05", 3600),
+      v("samsung-a0x", "A05s", 3600),
+      v("samsung-a0x", "A06", 3600),
+    ],
+  },
+  {
+    id: "samsung-a1x",
+    category: "samsung",
+    title: "Tech Tonic LCD — Samsung Galaxy A10–A16",
+    seriesName: "Galaxy A10–A16",
+    description: "Premium LCD for Galaxy A10, A11, A12, A13, A14, A16 and siblings.",
+    image: IMG,
+    variants: [
+      v("samsung-a1x", "A10", 3300),
+      v("samsung-a1x", "A10s", 3500),
+      v("samsung-a1x", "A11", 3500),
+      v("samsung-a1x", "A12", 3500),
+      v("samsung-a1x", "A13", 3500),
+      v("samsung-a1x", "A14", 3600),
+      v("samsung-a1x", "A16", 4500),
+    ],
+  },
+  {
+    id: "samsung-a2x",
+    category: "samsung",
+    title: "Tech Tonic LCD — Samsung Galaxy A20–A32",
+    seriesName: "Galaxy A20–A32",
+    description: "Premium LCD / OLED for Galaxy A20s, A21s, A32.",
+    image: IMG,
+    variants: [
+      v("samsung-a2x", "A20s", 3600),
+      v("samsung-a2x", "A21s", 3600),
+      v("samsung-a2x", "A32", 4600),
+      v("samsung-a2x", "A32 OLED", 8000),
+    ],
+  },
+  {
+    id: "samsung-j",
+    category: "samsung",
+    title: "Tech Tonic LCD — Samsung Galaxy J series",
+    seriesName: "Galaxy J series",
+    description: "Premium LCD for Galaxy J4+, J5 Prime, J6, J6 Plus, J7 Prime.",
+    image: IMG,
+    variants: [
+      v("samsung-j", "J4 Plus", 2800),
+      v("samsung-j", "J5 Prime", 3000),
+      v("samsung-j", "J6", 2800),
+      v("samsung-j", "J6 Plus", 2800),
+      v("samsung-j", "J7 Prime", 3000),
+    ],
+  },
+  {
+    id: "vivo-y0",
+    category: "vivo",
+    title: "Tech Tonic — Vivo Y02 / Y03 / Y04",
+    seriesName: "Vivo Y02–Y04",
+    description: "Premium LCD for Vivo Y02, Y03, Y04.",
+    image: IMG,
+    variants: [
+      v("vivo-y0", "Y02", 3500),
+      v("vivo-y0", "Y03", 3500),
+      v("vivo-y0", "Y04", 3600),
+    ],
+  },
+  {
+    id: "vivo-y1",
+    category: "vivo",
+    title: "Tech Tonic — Vivo Y12–Y19",
+    seriesName: "Vivo Y12–Y19",
+    description: "Premium LCD for Vivo Y12, Y17s, Y19, Y19S.",
+    image: IMG,
+    variants: [
+      v("vivo-y1", "Y12", 3500),
+      v("vivo-y1", "Y17s", 3500),
+      v("vivo-y1", "Y19", 3400),
+      v("vivo-y1", "Y19S", 3700),
+    ],
+  },
+  {
+    id: "vivo-y2",
+    category: "vivo",
+    title: "Tech Tonic — Vivo Y20–Y28",
+    seriesName: "Vivo Y20–Y28",
+    description: "Premium LCD for Vivo Y20, Y21, Y27, Y28.",
+    image: IMG,
+    variants: [
+      v("vivo-y2", "Y20", 3400),
+      v("vivo-y2", "Y21", 3200),
+      v("vivo-y2", "Y27", 3800),
+      v("vivo-y2", "Y28", 3700),
+    ],
+  },
+  {
+    id: "vivo-y3",
+    category: "vivo",
+    title: "Tech Tonic — Vivo Y30–Y36",
+    seriesName: "Vivo Y30–Y36",
+    description: "Premium LCD for Vivo Y30, Y33S, Y36.",
+    image: IMG,
+    variants: [
+      v("vivo-y3", "Y30", 3400),
+      v("vivo-y3", "Y33S", 3650),
+      v("vivo-y3", "Y36", 4300),
+    ],
+  },
+  {
+    id: "vivo-other",
+    category: "vivo",
+    title: "Tech Tonic — Vivo Y / V more",
+    seriesName: "Vivo Y53 · Y81 · V9+",
+    description: "Premium LCD for Vivo Y53, Y81, Y83, Y85, Y91, V9.",
+    image: IMG,
+    variants: [
+      v("vivo-other", "Y53", 4100),
+      v("vivo-other", "Y81", 3400),
+      v("vivo-other", "Y83", 3200),
+      v("vivo-other", "Y85", 3400),
+      v("vivo-other", "Y91", 3500),
+      v("vivo-other", "V9", 3400),
+    ],
+  },
+  {
+    id: "oppo-a",
+    category: "oppo",
+    title: "Tech Tonic — OPPO A series",
+    seriesName: "OPPO A series",
+    description: "Best quality replacement for OPPO A models.",
+    image: IMG,
+    variants: [
+      v("oppo-a", "A3S", 3400),
+      v("oppo-a", "A5 Black", 3200),
+      v("oppo-a", "A5 White", 3200),
+      v("oppo-a", "A5S", 3300),
+      v("oppo-a", "A16", 3400),
+      v("oppo-a", "A52", 3400),
+      v("oppo-a", "A53S", 3400),
+      v("oppo-a", "A54", 3450),
+      v("oppo-a", "A92", 3400),
+    ],
+  },
+  {
+    id: "oppo-f",
+    category: "oppo",
+    title: "Tech Tonic — OPPO F series",
+    seriesName: "OPPO F series",
+    description: "Best quality replacement for OPPO F9, F11, F11 Pro.",
+    image: IMG,
+    variants: [
+      v("oppo-f", "F9", 3400),
+      v("oppo-f", "F11", 3400),
+      v("oppo-f", "F11 Pro", 3700),
+    ],
+  },
+  {
     id: "redmi-c-series",
     category: "xiaomi",
     title: "Tech Tonic — Redmi 9C / 12C / 13C / 14C",
+    seriesName: "Redmi C series",
     description:
       "Premium replacement — crystal clear HD panel, bright responsive touch.",
     image: IMG,
@@ -279,28 +364,46 @@ export const STORE_PRODUCT_LINES: StoreProductLine[] = [
     ],
   },
   {
-    id: "huawei-honor",
+    id: "huawei-nova",
     category: "huawei",
-    title: "Tech Tonic — Huawei / Honor",
-    description:
-      "High-quality replacement — bright responsive touch. Nova, Y, Honor 8X/8C/10 Lite and more.",
-    detailDescription:
-      "Tech Tonic display units for Huawei and Honor phones listed in our catalogue. Expect solid brightness, smooth gesture response, and a finish that matches OEM-style expectations. Pick the precise variant (Nova, Y-series, Honor, etc.) so the frame, flex, and cut-outs line up with your device. Tech Tonic ships against your cash on delivery order—confirm your model at checkout notes if you want the rider to double-check.",
+    title: "Tech Tonic — Huawei Nova",
+    seriesName: "Huawei Nova",
+    description: "High-quality replacement for Nova 3i, 7i, SE.",
     image: IMG,
     variants: [
-      v("huawei-honor", "Nova 3i", 3500),
-      v("huawei-honor", "Nova 7i", 3500),
-      v("huawei-honor", "Nova SE", 5400),
-      v("huawei-honor", "Y91", 5300),
-      v("huawei-honor", "Y9", 3400),
-      v("huawei-honor", "Y7", 3400),
-      v("huawei-honor", "Y6", 3200),
-      v("huawei-honor", "Y7A", 3400),
-      v("huawei-honor", "Y7 Prime", 3400),
-      v("huawei-honor", "Y9A", 5400),
-      v("huawei-honor", "Honor 8X", 3500),
-      v("huawei-honor", "Honor 8C", 3500),
-      v("huawei-honor", "Honor 10 Lite", 3400),
+      v("huawei-nova", "Nova 3i", 3500),
+      v("huawei-nova", "Nova 7i", 3500),
+      v("huawei-nova", "Nova SE", 5400),
+    ],
+  },
+  {
+    id: "huawei-y",
+    category: "huawei",
+    title: "Tech Tonic — Huawei Y series",
+    seriesName: "Huawei Y series",
+    description: "High-quality replacement for Huawei Y6–Y9A.",
+    image: IMG,
+    variants: [
+      v("huawei-y", "Y6", 3200),
+      v("huawei-y", "Y7", 3400),
+      v("huawei-y", "Y7A", 3400),
+      v("huawei-y", "Y7 Prime", 3400),
+      v("huawei-y", "Y9", 3400),
+      v("huawei-y", "Y9A", 5400),
+      v("huawei-y", "Y91", 5300),
+    ],
+  },
+  {
+    id: "honor",
+    category: "huawei",
+    title: "Tech Tonic — Honor",
+    seriesName: "Honor",
+    description: "High-quality replacement for Honor 8X, 8C, 10 Lite.",
+    image: IMG,
+    variants: [
+      v("honor", "Honor 8X", 3500),
+      v("honor", "Honor 8C", 3500),
+      v("honor", "Honor 10 Lite", 3400),
     ],
   },
 ];
@@ -337,8 +440,16 @@ export function getModelsForCategory(categoryId: StoreCategory): StoreModelEntry
   );
 }
 
+export function getSeriesForCategory(categoryId: StoreCategory): StoreProductLine[] {
+  return STORE_PRODUCT_LINES.filter((line) => line.category === categoryId);
+}
+
 export function modelCountForCategory(categoryId: StoreCategory): number {
   return getModelsForCategory(categoryId).length;
+}
+
+export function seriesCountForCategory(categoryId: StoreCategory): number {
+  return getSeriesForCategory(categoryId).length;
 }
 
 export function minPrice(line: StoreProductLine): number {
@@ -375,6 +486,7 @@ export function displayNameForVariant(
 
 /** Short series heading for cart groups (e.g. iPhone 11 family). */
 export function seriesLabelForLine(line: StoreProductLine): string {
+  if (line.seriesName?.trim()) return line.seriesName.trim();
   const cat = STORE_CATEGORIES.find((c) => c.id === line.category);
   const brand = cat?.label ?? "Panel";
   const fromTitle = line.title

@@ -276,10 +276,26 @@ body {
   animation: cart-pulse 2s ease-in-out infinite;
 }
 
+@keyframes home-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.home-fade-up {
+  animation: home-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-image,
   .featured-card:hover .featured-image,
-  .ticker-track {
+  .ticker-track,
+  .home-fade-up {
     animation: none !important;
   }
 
@@ -287,5 +303,10 @@ body {
   .featured-shine {
     animation: none !important;
     opacity: 0;
+  }
+
+  .home-fade-up {
+    opacity: 1;
+    transform: none;
   }
 }

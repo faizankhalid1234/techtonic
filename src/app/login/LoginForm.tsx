@@ -33,8 +33,8 @@ export function LoginForm() {
         setError(authErrorMessage(res, data, "Could not sign in. Try again."));
         return;
       }
-      router.push(from === "checkout" ? "/checkout" : "/");
       router.refresh();
+      router.push(from === "checkout" ? "/checkout" : "/");
     } catch {
       setError("Connection failed. Please try again later.");
     } finally {

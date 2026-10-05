@@ -5,6 +5,7 @@ import {
   STORE_CATEGORIES,
   brandStoreHref,
   modelCountForCategory,
+  seriesCountForCategory,
   type StoreCategory,
 } from "@/lib/storeCatalog";
 
@@ -71,6 +72,7 @@ export default function StorePage() {
         {STORE_CATEGORIES.map((cat) => {
           const style = BRAND_STYLE[cat.id];
           const count = modelCountForCategory(cat.id);
+          const seriesCount = seriesCountForCategory(cat.id);
           return (
             <Link
               key={cat.id}
@@ -88,7 +90,7 @@ export default function StorePage() {
               </p>
               <h2 className="mt-3 text-2xl font-bold text-white">{cat.label}</h2>
               <p className="mt-2 text-sm text-zinc-400">
-                {copy.shop.modelsAvailable(count)}
+                {seriesCount} series · {copy.shop.modelsAvailable(count)}
               </p>
               <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-zinc-200 group-hover:text-amber-200">
                 {copy.shop.viewModels}

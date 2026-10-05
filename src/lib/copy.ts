@@ -12,7 +12,9 @@ export const copy = {
     backToBrands: "All brands",
     searchPlaceholder: (brand: string) => `Search ${brand} models…`,
     modelHint: "View details · Add to cart or buy now",
-    selectModel: "Select your model to see price and checkout options.",
+    selectModel: "Open a series, then pick your exact model.",
+    seriesHint: (n: number) =>
+      `${n} series · open one to see all models`,
   },
   cart: {
     title: "Your cart",
