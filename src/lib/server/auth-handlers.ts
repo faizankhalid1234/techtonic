@@ -1,4 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  ACCOUNTS_COOKIE,
+  cookieCreateUser,
+  cookieFindByEmail,
+  cookieFindById,
+  cookieVerifyLogin,
+} from "./cookie-accounts";
 import { getJwtSecret } from "./jwt-secret";
 import {
   SESSION_COOKIE,
@@ -6,10 +13,17 @@ import {
   signSessionToken,
   verifySessionToken,
 } from "./session";
-import * as users from "./file-users";
+import * as users from "./users";
 
 function publicUser(user: { name: string; email: string }) {
   return { name: user.name, email: user.email };
+}
+
+function accountsCookieOptions() {
+  return {
+    ...sessionCookieOptions(),
+    maxAge: 365 * 24 * 60 * 60,
+  };
 }
 
 export async function handleRegister(req: NextRequest) {
@@ -32,25 +46,62 @@ export async function handleRegister(req: NextRequest) {
       );
     }
     const normalized = String(email).trim().toLowerCase();
-    const exists = await users.findUserByEmail(normalized);
-    if (exists) {
+    const secret = getJwtSecret();
+    const accountsTok = req.cookies.get(ACCOUNTS_COOKIE)?.value;
+
+    const existingDurable = await users.findUserByEmail(normalized);
+    const existingCookie = await cookieFindByEmail(
+      accountsTok,
+      secret,
+      normalized,
+    );
+    if (existingDurable || existingCookie) {
       return NextResponse.json(
         { error: "An account with this email already exists. Please sign in." },
         { status: 409 },
       );
     }
-    const secret = getJwtSecret();
-    const user = await users.createUser({
-      name: String(name).trim(),
-      email: normalized,
-      password: String(password),
-    });
+
+    let user: { _id: string; name: string; email: string };
+    let nextAccounts: string | undefined;
+
+    try {
+      user = await users.createUser({
+        name: String(name).trim(),
+        email: normalized,
+        password: String(password),
+      });
+    } catch (err) {
+      if ((err as { code?: string }).code === "EMAIL_EXISTS") {
+        return NextResponse.json(
+          {
+            error:
+              "An account with this email already exists. Please sign in.",
+          },
+          { status: 409 },
+        );
+      }
+      if ((err as Error).message !== "DATABASE_UNAVAILABLE") {
+        throw err;
+      }
+      const created = await cookieCreateUser(accountsTok, secret, {
+        name: String(name).trim(),
+        email: normalized,
+        password: String(password),
+      });
+      user = created.user;
+      nextAccounts = created.accountsToken;
+    }
+
     const token = await signSessionToken(user, secret);
     const res = NextResponse.json(
       { user: publicUser(user) },
       { status: 201 },
     );
     res.cookies.set(SESSION_COOKIE, token, sessionCookieOptions());
+    if (nextAccounts) {
+      res.cookies.set(ACCOUNTS_COOKIE, nextAccounts, accountsCookieOptions());
+    }
     return res;
   } catch (err) {
     const code = (err as { code?: string }).code;
@@ -81,14 +132,25 @@ export async function handleLogin(req: NextRequest) {
       );
     }
     const normalized = String(email).trim().toLowerCase();
-    const user = await users.verifyLogin(normalized, String(password));
+    const secret = getJwtSecret();
+    const accountsTok = req.cookies.get(ACCOUNTS_COOKIE)?.value;
+
+    let user =
+      (await users.verifyLogin(normalized, String(password))) ??
+      (await cookieVerifyLogin(
+        accountsTok,
+        secret,
+        normalized,
+        String(password),
+      ));
+
     if (!user) {
       return NextResponse.json(
         { error: "Invalid email or password." },
         { status: 401 },
       );
     }
-    const secret = getJwtSecret();
+
     const token = await signSessionToken(user, secret);
     const res = NextResponse.json({ user: publicUser(user) });
     res.cookies.set(SESSION_COOKIE, token, sessionCookieOptions());
@@ -115,9 +177,24 @@ export async function handleMe(req: NextRequest) {
     const payload = await verifySessionToken(token, secret);
     const sub = payload.sub;
     if (!sub) return NextResponse.json({ user: null });
-    const user = await users.findUserById(String(sub));
-    if (!user) return NextResponse.json({ user: null });
-    return NextResponse.json({ user: publicUser(user) });
+
+    const fromStore =
+      (await users.findUserById(String(sub))) ??
+      (await cookieFindById(
+        req.cookies.get(ACCOUNTS_COOKIE)?.value,
+        secret,
+        String(sub),
+      ));
+    if (fromStore) {
+      return NextResponse.json({ user: publicUser(fromStore) });
+    }
+
+    const email = typeof payload.email === "string" ? payload.email : null;
+    const name = typeof payload.name === "string" ? payload.name : null;
+    if (email && name) {
+      return NextResponse.json({ user: { name, email } });
+    }
+    return NextResponse.json({ user: null });
   } catch {
     return NextResponse.json({ user: null });
   }
@@ -131,7 +208,22 @@ export async function requireUser(req: NextRequest) {
     const payload = await verifySessionToken(token, secret);
     const sub = payload.sub;
     if (!sub) return null;
-    return users.findUserById(String(sub));
+
+    const fromStore =
+      (await users.findUserById(String(sub))) ??
+      (await cookieFindById(
+        req.cookies.get(ACCOUNTS_COOKIE)?.value,
+        secret,
+        String(sub),
+      ));
+    if (fromStore) return fromStore;
+
+    const email = typeof payload.email === "string" ? payload.email : null;
+    const name = typeof payload.name === "string" ? payload.name : null;
+    if (email && name) {
+      return { _id: String(sub), name, email };
+    }
+    return null;
   } catch {
     return null;
   }
