@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { getJwtSecret } from "./lib/server/jwt-secret";
 
 const SESSION = "techtonic_session";
 
@@ -9,8 +10,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   const token = request.cookies.get(SESSION)?.value;
-  const secret = process.env.JWT_SECRET;
-  if (!token || !secret) {
+  const secret = getJwtSecret();
+  if (!token) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("from", "checkout");

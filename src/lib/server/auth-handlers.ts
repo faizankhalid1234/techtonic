@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getJwtSecret } from "./jwt-secret";
 import {
   SESSION_COOKIE,
   sessionCookieOptions,
@@ -9,12 +10,6 @@ import * as users from "./file-users";
 
 function publicUser(user: { name: string; email: string }) {
   return { name: user.name, email: user.email };
-}
-
-function jwtSecret() {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) return null;
-  return secret;
 }
 
 export async function handleRegister(req: NextRequest) {
@@ -44,10 +39,7 @@ export async function handleRegister(req: NextRequest) {
         { status: 409 },
       );
     }
-    const secret = jwtSecret();
-    if (!secret) {
-      return NextResponse.json({ error: "Server misconfigured." }, { status: 500 });
-    }
+    const secret = getJwtSecret();
     const user = await users.createUser({
       name: String(name).trim(),
       email: normalized,
@@ -96,10 +88,7 @@ export async function handleLogin(req: NextRequest) {
         { status: 401 },
       );
     }
-    const secret = jwtSecret();
-    if (!secret) {
-      return NextResponse.json({ error: "Server misconfigured." }, { status: 500 });
-    }
+    const secret = getJwtSecret();
     const token = await signSessionToken(user, secret);
     const res = NextResponse.json({ user: publicUser(user) });
     res.cookies.set(SESSION_COOKIE, token, sessionCookieOptions());
@@ -117,9 +106,9 @@ export async function handleLogout() {
 }
 
 export async function handleMe(req: NextRequest) {
-  const secret = jwtSecret();
+  const secret = getJwtSecret();
   const token = req.cookies.get(SESSION_COOKIE)?.value;
-  if (!secret || !token) {
+  if (!token) {
     return NextResponse.json({ user: null });
   }
   try {
@@ -135,9 +124,9 @@ export async function handleMe(req: NextRequest) {
 }
 
 export async function requireUser(req: NextRequest) {
-  const secret = jwtSecret();
+  const secret = getJwtSecret();
   const token = req.cookies.get(SESSION_COOKIE)?.value;
-  if (!secret || !token) return null;
+  if (!token) return null;
   try {
     const payload = await verifySessionToken(token, secret);
     const sub = payload.sub;
