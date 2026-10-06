@@ -2,9 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import { AddToCartButton } from "@/components/AddToCartButton";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useMemo, useState } from "react";
 import { StoreCartBar } from "@/components/StoreCartBar";
 import { useCart } from "@/context/CartContext";
 import { copy } from "@/lib/copy";
@@ -24,7 +23,10 @@ type CategoryInfo = {
 };
 
 function formatPkr(n: number) {
-  return n.toLocaleString("en-PK");
+  return n.toLocaleString("en-PK", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
 }
 
 export function BrandModelsClient({
@@ -34,27 +36,54 @@ export function BrandModelsClient({
   category: CategoryInfo;
   series: StoreProductLine[];
 }) {
-  const [query, setQuery] = useState("");
-  const [openSeriesId, setOpenSeriesId] = useState<string | null>(
-    series[0]?.id ?? null,
+  return (
+    <Suspense
+      fallback={
+        <main className="mx-auto flex w-full max-w-5xl flex-1 items-center justify-center px-4 py-20">
+          <p className="text-sm text-zinc-500">Loading shop…</p>
+        </main>
+      }
+    >
+      <BrandModelsInner category={category} series={series} />
+    </Suspense>
   );
+}
+
+function BrandModelsInner({
+  category,
+  series,
+}: {
+  category: CategoryInfo;
+  series: StoreProductLine[];
+}) {
+  const search = useSearchParams();
+  const selectedSeriesId = search.get("series");
+  const [query, setQuery] = useState("");
   const [addedId, setAddedId] = useState<string | null>(null);
 
-  const filteredSeries = useMemo(() => {
+  const selectedLine = useMemo(
+    () => series.find((line) => line.id === selectedSeriesId) ?? null,
+    [series, selectedSeriesId],
+  );
+
+  const seriesMatches = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return series;
-    return series
-      .map((line) => {
-        const matchingVariants = line.variants.filter(
-          (v) =>
-            v.label.toLowerCase().includes(q) ||
-            line.seriesName.toLowerCase().includes(q),
-        );
-        if (matchingVariants.length === 0) return null;
-        return { ...line, variants: matchingVariants };
-      })
-      .filter(Boolean) as StoreProductLine[];
+    return series.filter(
+      (line) =>
+        line.seriesName.toLowerCase().includes(q) ||
+        line.variants.some((v) => v.label.toLowerCase().includes(q)),
+    );
   }, [series, query]);
+
+  const selectedVariants = useMemo(() => {
+    if (!selectedLine) return [];
+    const q = query.trim().toLowerCase();
+    if (!q) return selectedLine.variants;
+    return selectedLine.variants.filter((v) =>
+      v.label.toLowerCase().includes(q),
+    );
+  }, [selectedLine, query]);
 
   function flashAdded(variantId: string) {
     setAddedId(variantId);
@@ -64,184 +93,162 @@ export function BrandModelsClient({
     );
   }
 
-  return (
-    <main className="relative mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:py-14">
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-amber-500/10 to-transparent blur-3xl"
-        aria-hidden
-      />
+  const brandHref = `/store/${category.id}`;
 
+  return (
+    <main className="relative mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6 sm:py-14">
       <nav
-        className="relative mb-6 flex flex-wrap items-center gap-1.5 text-sm text-zinc-500"
+        className="mb-8 flex flex-wrap items-center gap-1.5 text-sm text-zinc-500"
         aria-label="Breadcrumb"
       >
-        <Link href="/" className="transition hover:text-amber-300">
+        <Link href="/" className="transition hover:text-zinc-200">
           Home
         </Link>
-        <span className="text-zinc-600">›</span>
-        <Link href="/store" className="transition hover:text-amber-300">
+        <span className="text-zinc-700">/</span>
+        <Link href="/store" className="transition hover:text-zinc-200">
           Shop
         </Link>
-        <span className="text-zinc-600">›</span>
-        <span className="text-amber-300">{category.label}</span>
+        <span className="text-zinc-700">/</span>
+        {selectedLine ? (
+          <>
+            <Link href={brandHref} className="transition hover:text-zinc-200">
+              {category.label}
+            </Link>
+            <span className="text-zinc-700">/</span>
+            <span className="text-zinc-200">{selectedLine.seriesName}</span>
+          </>
+        ) : (
+          <span className="text-zinc-200">{category.label}</span>
+        )}
       </nav>
 
-      <header className="relative mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <header className="mb-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-400">
+          <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-zinc-500">
             {category.short}
           </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            {category.label} series
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+            {selectedLine ? selectedLine.seriesName : category.label}
           </h1>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-zinc-400">
-            Pick a series (like iPhone 11), then choose your exact model —
-            11, 11 Pro, or 11 Pro Max.
+          <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-500">
+            {selectedLine
+              ? "Only this series. Go back to see other models."
+              : "Pick a series. Other models stay hidden until you go back."}
           </p>
         </div>
         <StoreCartBar />
       </header>
 
-      <label className="relative mb-8 block">
-        <span className="sr-only">Search series or models</span>
+      <label className="mb-10 block">
+        <span className="sr-only">Search</span>
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={`Search ${category.label} series or models…`}
-          className="w-full rounded-2xl border border-zinc-700/80 bg-zinc-900/80 px-5 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-500 outline-none transition focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
+          placeholder={
+            selectedLine
+              ? `Search ${selectedLine.seriesName} models…`
+              : `Search ${category.label} series…`
+          }
+          className="w-full border-0 border-b border-zinc-800 bg-transparent px-0 py-3 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition focus:border-zinc-500"
         />
       </label>
 
-      {filteredSeries.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-zinc-700 bg-zinc-900/40 p-12 text-center text-zinc-400">
-          No series or models match your search.
+      {selectedLine ? (
+        selectedVariants.length === 0 ? (
+          <p className="py-16 text-center text-sm text-zinc-500">
+            No models match your search.
+          </p>
+        ) : (
+          <ul className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
+            {selectedVariants.map((variant) => (
+              <ModelCard
+                key={variant.id}
+                line={selectedLine}
+                variant={variant}
+                brandLabel={category.label}
+                added={addedId === variant.id}
+                onAdded={() => flashAdded(variant.id)}
+              />
+            ))}
+          </ul>
+        )
+      ) : seriesMatches.length === 0 ? (
+        <p className="py-16 text-center text-sm text-zinc-500">
+          No series match your search.
         </p>
       ) : (
-        <div className="relative space-y-4">
-          {filteredSeries.map((line) => {
-            const open = openSeriesId === line.id || Boolean(query.trim());
-            return (
-              <SeriesCategory
-                key={line.id}
-                line={line}
-                brandLabel={category.label}
-                open={open}
-                onToggle={() =>
-                  setOpenSeriesId((id) => (id === line.id ? null : line.id))
-                }
-                addedId={addedId}
-                onAdded={flashAdded}
-              />
-            );
-          })}
-        </div>
+        <ul className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
+          {seriesMatches.map((line) => (
+            <SeriesPickCard
+              key={line.id}
+              line={line}
+              href={`${brandHref}?series=${encodeURIComponent(line.id)}`}
+            />
+          ))}
+        </ul>
       )}
 
       <Link
-        href="/store"
-        className="relative mt-12 inline-flex items-center gap-2 text-sm font-medium text-amber-400 transition hover:text-amber-300"
+        href={selectedLine ? brandHref : "/store"}
+        className="mt-16 inline-flex items-center gap-2 text-sm font-medium text-zinc-300 transition hover:text-white"
       >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
-        {copy.shop.backToBrands}
+        {selectedLine ? `Back to ${category.label}` : copy.shop.backToBrands}
       </Link>
     </main>
   );
 }
 
-function SeriesCategory({
+function SeriesPickCard({
   line,
-  brandLabel,
-  open,
-  onToggle,
-  addedId,
-  onAdded,
+  href,
 }: {
   line: StoreProductLine;
-  brandLabel: string;
-  open: boolean;
-  onToggle: () => void;
-  addedId: string | null;
-  onAdded: (id: string) => void;
+  href: string;
 }) {
   const gallery = galleryImagesForLine(line);
   const thumb = gallery[0] ?? line.image;
   const low = minPrice(line);
   const high = maxPrice(line);
-  const priceLabel =
-    low === high
-      ? `From Rs. ${formatPkr(low)}`
-      : `Rs. ${formatPkr(low)} – ${formatPkr(high)}`;
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-zinc-800/80 bg-gradient-to-br from-zinc-900/95 via-zinc-950 to-zinc-950 shadow-xl shadow-black/30 ring-1 ring-white/[0.04] transition hover:border-amber-500/25">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex w-full items-center gap-4 p-4 text-left transition hover:bg-zinc-900/60 sm:p-5"
-        aria-expanded={open}
+    <li>
+      <Link
+        href={href}
+        className="flex h-full flex-col overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-amber-400/50"
       >
-        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-zinc-700/60 bg-zinc-800/80 sm:h-20 sm:w-20">
+        <div className="relative aspect-[4/5] w-full bg-zinc-950">
           <Image
             src={thumb}
             alt={line.seriesName}
             fill
-            className="object-contain object-center p-1.5"
-            sizes="80px"
+            className="object-contain object-center p-4 sm:p-5"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 220px"
             unoptimized
           />
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-amber-400/80">
-            Series
-          </p>
-          <h2 className="mt-0.5 text-lg font-bold text-white sm:text-xl">
+        <div className="flex flex-1 flex-col px-3 pb-3.5 pt-3 sm:px-3.5">
+          <p className="line-clamp-2 min-h-[2.5rem] text-[13px] font-medium leading-snug text-zinc-100 sm:text-sm">
             {line.seriesName}
-          </h2>
-          <p className="mt-1 text-sm text-zinc-400">
-            {line.variants.length} models · {priceLabel}
           </p>
-        </div>
-        <span className="flex shrink-0 items-center gap-2">
-          <span className="hidden rounded-full bg-amber-500/15 px-3 py-1 text-xs font-semibold text-amber-200 ring-1 ring-amber-500/25 sm:inline">
-            {line.variants.length}
+          <p className="mt-1.5 text-[15px] font-semibold tabular-nums text-white sm:text-base">
+            {low === high
+              ? `Rs.${formatPkr(low)}.00`
+              : `From Rs.${formatPkr(low)}.00`}
+          </p>
+          <p className="mt-1 text-xs text-zinc-500">
+            {line.variants.length} models
+            {low !== high ? ` · up to Rs.${formatPkr(high)}` : ""}
+          </p>
+          <span className="mt-3 flex min-h-[2.6rem] items-center justify-center rounded-xl bg-amber-400 px-3 text-[13px] font-bold text-zinc-950">
+            View models
           </span>
-          <svg
-            className={`h-5 w-5 text-zinc-400 transition ${open ? "rotate-180" : ""}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </span>
-      </button>
-
-      {open ? (
-        <div className="border-t border-zinc-800/80 bg-zinc-950/40 px-3 pb-4 pt-3 sm:px-5">
-          <p className="mb-3 px-1 text-xs text-zinc-500">
-            Choose your exact model in this series
-          </p>
-          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {line.variants.map((variant) => (
-              <ModelCard
-                key={variant.id}
-                line={line}
-                variant={variant}
-                brandLabel={brandLabel}
-                thumb={thumb}
-                gallery={gallery}
-                added={addedId === variant.id}
-                onAdded={() => onAdded(variant.id)}
-              />
-            ))}
-          </ul>
         </div>
-      ) : null}
-    </section>
+      </Link>
+    </li>
   );
 }
 
@@ -249,21 +256,19 @@ function ModelCard({
   line,
   variant,
   brandLabel,
-  thumb,
-  gallery,
   added,
   onAdded,
 }: {
   line: StoreProductLine;
   variant: StoreVariant;
   brandLabel: string;
-  thumb: string;
-  gallery: string[];
   added: boolean;
   onAdded: () => void;
 }) {
   const router = useRouter();
   const { addItem, replaceWithItem } = useCart();
+  const gallery = galleryImagesForLine(line);
+  const thumb = gallery[0] ?? line.image;
   const displayName = `${brandLabel} — ${variant.label}`;
 
   function payload() {
@@ -278,46 +283,50 @@ function ModelCard({
   }
 
   return (
-    <li className="flex flex-col overflow-hidden rounded-2xl border border-zinc-800/70 bg-gradient-to-b from-zinc-900 to-zinc-950/90 shadow-md shadow-black/20 transition hover:border-amber-500/35 hover:shadow-amber-500/5">
-      <div className="relative aspect-[4/3] w-full border-b border-zinc-800/80 bg-zinc-900/50 p-3">
+    <li className="flex flex-col overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-zinc-800">
+      <div className="relative aspect-[4/5] w-full bg-zinc-950">
         <Image
           src={thumb}
           alt={variant.label}
           fill
-          className="object-contain object-center p-2"
-          sizes="(max-width: 640px) 100vw, 220px"
+          className="object-contain object-center p-4 sm:p-5"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 220px"
           unoptimized
         />
       </div>
-      <div className="flex flex-1 flex-col p-3.5">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-          {line.seriesName}
-        </p>
-        <p className="mt-0.5 text-base font-semibold text-zinc-100">
+
+      <div className="flex flex-1 flex-col px-3 pb-3 pt-3 sm:px-3.5 sm:pb-3.5">
+        <p className="line-clamp-2 min-h-[2.5rem] text-[13px] font-medium leading-snug text-zinc-100 sm:text-sm">
           {variant.label}
         </p>
-        <p className="mt-2 text-xl font-bold tabular-nums text-amber-300">
-          Rs. {formatPkr(variant.price)}
+        <p className="mt-1.5 text-[15px] font-semibold tabular-nums text-white sm:text-base">
+          Rs.{formatPkr(variant.price)}.00
         </p>
-        <div className="mt-3 grid grid-cols-2 gap-2">
+        <div className="mt-3 grid grid-cols-1 gap-2">
           <button
             type="button"
             onClick={() => {
               replaceWithItem(payload());
               router.push("/checkout");
             }}
-            className="min-h-[2.5rem] rounded-xl bg-sky-500/90 text-xs font-bold uppercase tracking-wide text-white transition hover:bg-sky-400"
+            className="flex min-h-[2.6rem] w-full items-center justify-center rounded-xl bg-amber-400 px-3 text-[13px] font-bold text-zinc-950 transition hover:bg-amber-300"
           >
             Buy now
           </button>
-          <AddToCartButton
+          <button
+            type="button"
             onClick={() => {
               addItem(payload());
               onAdded();
             }}
-            added={added}
-            variant="daraz"
-          />
+            className={`flex min-h-[2.6rem] w-full items-center justify-center rounded-xl px-3 text-[13px] font-bold transition ${
+              added
+                ? "bg-emerald-500 text-white"
+                : "bg-zinc-800 text-white ring-1 ring-zinc-600 hover:bg-zinc-700"
+            }`}
+          >
+            {added ? "Added ✓" : "Add to cart"}
+          </button>
         </div>
       </div>
     </li>
