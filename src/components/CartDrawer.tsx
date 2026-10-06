@@ -100,9 +100,6 @@ export function CartDrawer({
                   </span>
                 ) : null}
               </h2>
-              <p className="mt-1.5 text-xs leading-relaxed text-zinc-500">
-                Same series models · pay only for items in your bag
-              </p>
             </div>
             <button
               type="button"

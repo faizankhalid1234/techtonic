@@ -51,11 +51,8 @@ export default function Home() {
               </span>
             </h1>
 
-            <p className="mt-3 text-[13px] leading-6 text-zinc-200/95 [text-shadow:0_1px_12px_rgba(0,0,0,0.8)] sm:text-sm sm:leading-7">
-              Original-colour LCD &amp; OLED panels.
-              <span className="mt-0.5 block text-zinc-400">
-                Shop by series · Cart · Cash on delivery
-              </span>
+            <p className="mt-3 text-[13px] leading-6 text-zinc-200/95 [text-shadow:0_1px_12px_rgba(0,0,0,0.8)] sm:text-sm">
+              LCD &amp; OLED panels. Cash on delivery.
             </p>
 
             <div className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:items-center">
@@ -98,9 +95,8 @@ export default function Home() {
             <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
               Find your series fast
             </h2>
-            <p className="mt-3 text-sm leading-relaxed text-zinc-400 sm:text-base">
-              Open a brand, pick a series like iPhone 11, then choose 11, 11 Pro,
-              or 11 Pro Max.
+            <p className="mt-3 text-sm text-zinc-400 sm:text-base">
+              Choose a brand and model.
             </p>
           </div>
 
@@ -185,7 +181,7 @@ export default function Home() {
                   },
                   {
                     title: "Series-matched fit",
-                    body: "Shop by series — 11, 11 Pro, 11 Pro Max and more.",
+                    body: "Fits your exact model.",
                   },
                 ].map((item) => (
                   <li

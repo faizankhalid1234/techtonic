@@ -96,9 +96,9 @@ function BrandModelsInner({
   const brandHref = `/store/${category.id}`;
 
   return (
-    <main className="relative mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6 sm:py-14">
+    <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
       <nav
-        className="mb-8 flex flex-wrap items-center gap-1.5 text-sm text-zinc-500"
+        className="mb-4 flex flex-wrap items-center gap-1.5 text-sm text-zinc-500"
         aria-label="Breadcrumb"
       >
         <Link href="/" className="transition hover:text-zinc-200">
@@ -122,35 +122,21 @@ function BrandModelsInner({
         )}
       </nav>
 
-      <header className="mb-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-zinc-500">
-            {category.short}
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-            {selectedLine ? selectedLine.seriesName : category.label}
-          </h1>
-          <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-500">
-            {selectedLine
-              ? "Only this series. Go back to see other models."
-              : "Pick a series. Other models stay hidden until you go back."}
-          </p>
-        </div>
+      <header className="mb-5 flex items-end justify-between gap-4">
+        <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+          {selectedLine ? selectedLine.seriesName : category.label}
+        </h1>
         <StoreCartBar />
       </header>
 
-      <label className="mb-10 block">
+      <label className="mb-5 block">
         <span className="sr-only">Search</span>
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={
-            selectedLine
-              ? `Search ${selectedLine.seriesName} models…`
-              : `Search ${category.label} series…`
-          }
-          className="w-full border-0 border-b border-zinc-800 bg-transparent px-0 py-3 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition focus:border-zinc-500"
+          placeholder={`Search ${selectedLine?.seriesName ?? category.label}…`}
+          className="w-full border-0 border-b border-zinc-800 bg-transparent px-0 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition focus:border-zinc-500"
         />
       </label>
 
@@ -191,7 +177,7 @@ function BrandModelsInner({
 
       <Link
         href={selectedLine ? brandHref : "/store"}
-        className="mt-16 inline-flex items-center gap-2 text-sm font-medium text-zinc-300 transition hover:text-white"
+        className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-zinc-300 transition hover:text-white"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -230,20 +216,16 @@ function SeriesPickCard({
             unoptimized
           />
         </div>
-        <div className="flex flex-1 flex-col px-3 pb-3.5 pt-3 sm:px-3.5">
-          <p className="line-clamp-2 min-h-[2.5rem] text-[13px] font-medium leading-snug text-zinc-100 sm:text-sm">
+        <div className="flex flex-1 flex-col px-3 pb-3 pt-2.5">
+          <p className="text-[13px] font-medium leading-snug text-zinc-100 sm:text-sm">
             {line.seriesName}
           </p>
-          <p className="mt-1.5 text-[15px] font-semibold tabular-nums text-white sm:text-base">
+          <p className="mt-1 text-[15px] font-semibold tabular-nums text-white">
             {low === high
-              ? `Rs.${formatPkr(low)}.00`
-              : `From Rs.${formatPkr(low)}.00`}
+              ? `Rs. ${formatPkr(low)}`
+              : `From Rs. ${formatPkr(low)}`}
           </p>
-          <p className="mt-1 text-xs text-zinc-500">
-            {line.variants.length} models
-            {low !== high ? ` · up to Rs.${formatPkr(high)}` : ""}
-          </p>
-          <span className="mt-3 flex min-h-[2.6rem] items-center justify-center rounded-xl bg-amber-400 px-3 text-[13px] font-bold text-zinc-950">
+          <span className="mt-2.5 flex min-h-[2.5rem] items-center justify-center rounded-xl bg-amber-400 px-3 text-[13px] font-bold text-zinc-950">
             View models
           </span>
         </div>
@@ -295,12 +277,12 @@ function ModelCard({
         />
       </div>
 
-      <div className="flex flex-1 flex-col px-3 pb-3 pt-3 sm:px-3.5 sm:pb-3.5">
-        <p className="line-clamp-2 min-h-[2.5rem] text-[13px] font-medium leading-snug text-zinc-100 sm:text-sm">
+      <div className="flex flex-1 flex-col px-3 pb-3 pt-2.5">
+        <p className="text-[13px] font-medium leading-snug text-zinc-100 sm:text-sm">
           {variant.label}
         </p>
-        <p className="mt-1.5 text-[15px] font-semibold tabular-nums text-white sm:text-base">
-          Rs.{formatPkr(variant.price)}.00
+        <p className="mt-1 text-[15px] font-semibold tabular-nums text-white">
+          Rs. {formatPkr(variant.price)}
         </p>
         <div className="mt-3 grid grid-cols-1 gap-2">
           <button
