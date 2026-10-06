@@ -143,10 +143,15 @@ export default function CheckoutPage() {
           billingSameAsShipping: true,
         }),
       });
-      const data = await res.json();
+      const data = (await res.json().catch(() => null)) as {
+        error?: string;
+        orderId?: string;
+        paymentMethod?: PaymentMethod;
+        deliveryType?: DeliveryType;
+      } | null;
       if (!res.ok) {
         setMsg(
-          typeof data.error === "string"
+          typeof data?.error === "string"
             ? data.error
             : res.status === 401
               ? "Please sign in to place an order."
@@ -154,10 +159,14 @@ export default function CheckoutPage() {
         );
         return;
       }
+      if (!data?.orderId) {
+        setMsg("Could not place order. Please try again.");
+        return;
+      }
       setSuccess({
-        orderId: data.orderId as string,
-        paymentMethod: (data.paymentMethod as PaymentMethod) ?? paymentMethod,
-        deliveryType: (data.deliveryType as DeliveryType) ?? deliveryType,
+        orderId: data.orderId,
+        paymentMethod: data.paymentMethod ?? paymentMethod,
+        deliveryType: data.deliveryType ?? deliveryType,
       });
       clear();
       router.refresh();
